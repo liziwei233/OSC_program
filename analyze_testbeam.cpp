@@ -33,19 +33,19 @@ int main(int argc, char* argv[])
 
     //Specify the channels written in the files
     std::vector<int> channel_IDs;
-//    channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
-//    channel_IDs.push_back(2); //<- Channel 1 (mcp1)
+    channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
+    channel_IDs.push_back(2); //<- Channel 1 (mcp1)
     channel_IDs.push_back(3); //<- Channel 2 (mcp2)
-    channel_IDs.push_back(4); //<- Channel 2 (mcp2)
+//    channel_IDs.push_back(4); //<- Channel 2 (mcp2)
 //   TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--trace--");
-//    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--A1A2B1B2--",0);
-    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "trace",0);
+    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--A1A2B1B2--",0);
+//    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "trace",0);
 //    myfile.OpenTriggerChannel(argv[1],atoi(argv[2]),"--trace--",4);
 
     TestBeamSetup mysetup;
     mysetup.CreateMCP();
     mysetup.CreateMCP();
-//    mysetup.CreateMCP();
+    mysetup.CreateMCP();
 //    mysetup.CreateMCP();
 
 //    mysetup.CreateMM();
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
 
         if(i-1==dumping_id) // Specify Event to be dumped to dumpfile.root (read by executing ` root -l draw_dump.C `)
             mysetup.Dump();
-
+/*
         if(dumping_id >=0 && enable_dumping) 
             if(dumping_id<=i-1)
             {
@@ -95,11 +95,11 @@ int main(int argc, char* argv[])
                 int ok = scanf("%d",&dumping_id);
                 if(dumping_id < 0) break;
             }
-
+*/
         mysetup.Fill_Tree();
         //if(i==1) break;
     }
-    mysetup.Finalize_Tree(output_rootfile_name);
+    //mysetup.Finalize_Tree(output_rootfile_name);
 
     bench.Show("full");
 }
