@@ -60,30 +60,33 @@ void TestBeamSetup::TestBeamAnalysis()
     }
 }
 
-void TestBeamSetup::Dump()
-//void TestBeamSetup::Dump(int id)
+//void TestBeamSetup::Dump()
+void TestBeamSetup::Dump(int id)
 {
     TFile dumpfile("testbeam_dumpfile.root","update");
     //TTree *newtree = OutTree->CloneTree(0);
     //newtree->Fill();
 
     TObject integer;
-
     integer.SetUniqueID(Detectors.size());
     integer.Write("n");
+    
+    //TObject idNum;
+    //idNum.SetUniqueID(id);
+    //idNum.Write("id");
 
     TGraph gr;
     for(int i = 0; i < Detectors.size() ; ++i)
     {
         gr = TGraph(Detectors.at(i)->waveform_x.size(), &Detectors.at(i)->waveform_x[0], &Detectors.at(i)->waveform_y[0]);
         char str1[20];
-        sprintf(str1,"graph_%d",i);
+        sprintf(str1,"gMCP%d_id%d",i,id);
         //sprintf(str1,"graph_%d",i,id);
         gr.Write(str1);
         if( Detectors.at(i)->pre_filter_backup ) 
         {
             gr = TGraph(Detectors.at(i)->pre_filter_backup->waveform_x.size(), &Detectors.at(i)->pre_filter_backup->waveform_x[0], &Detectors.at(i)->pre_filter_backup->waveform_y[0]);
-            sprintf(str1,"unfiltered_graph_%d_%d",i);
+            sprintf(str1,"unfiltered_gMCP%d_id%d",i,id);
             //sprintf(str1,"unfiltered_graph_%d_%d",i,id);
             gr.Write(str1);
         }

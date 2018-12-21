@@ -24,42 +24,43 @@ int main(int argc, char* argv[])
 
     int enable_dumping = 0;
     int dumping_id = 4;
-    if(argc > 4)
+    if(argc >= 4)
     {
         //if(atoi(argv[4]) == 1)
         //enable_dumping = 1;
         dumping_id = atoi(argv[4]);
     }
-
     //Specify the channels written in the files
     std::vector<int> channel_IDs;
-    channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
-    channel_IDs.push_back(2); //<- Channel 1 (mcp1)
+//    channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
+//    channel_IDs.push_back(2); //<- Channel 1 (mcp1)
     channel_IDs.push_back(3); //<- Channel 2 (mcp2)
-//    channel_IDs.push_back(4); //<- Channel 2 (mcp2)
+    channel_IDs.push_back(4); //<- Channel 2 (mcp2)
 //   TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--trace--");
-    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--A1A2B1B2--",0);
-//    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "trace",0);
+//    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--A1A2B1B2--",0);
+    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "trace",0);
 //    myfile.OpenTriggerChannel(argv[1],atoi(argv[2]),"--trace--",4);
 
     TestBeamSetup mysetup;
     mysetup.CreateMCP();
     mysetup.CreateMCP();
-    mysetup.CreateMCP();
+//    mysetup.CreateMCP();
 //    mysetup.CreateMCP();
 
 //    mysetup.CreateMM();
 
     int NumberofTracks;
     Track OneTrack;
-        std::cout << argv[5] << "\t" << atoi(argv[5]) << std::endl;
+    if(argc >5){
+    std::cout << argv[5] << "\t" << atoi(argv[5]) << std::endl;
     if( atoi(argv[5]) != 0)
     {
         Tracker = new TrackInfo(argv[6]);
-        mysetup.init(NumberofTracks, OneTrack);
+    //    mysetup.init(NumberofTracks, OneTrack);
+    }
     }
     else
-        mysetup.init();
+    //    mysetup.init();
 
     myfile.SetDetectorSetup(mysetup);
 
@@ -76,17 +77,16 @@ int main(int argc, char* argv[])
 
 
         //std::cout << "trignum = " << mysetup.TriggerNumber << std::endl;
-        if( atoi(argv[5]) != 0 )
+        if(argc > 5 && atoi(argv[5]) != 0 )
         {
             NumberofTracks = Tracker->NumberofTracks[mysetup.TriggerNumber];
             OneTrack = Tracker->TrackBank[mysetup.TriggerNumber].at(0);
         }
 
-        mysetup.TestBeamAnalysis();
-
+     //   mysetup.TestBeamAnalysis();
 
         if(i-1==dumping_id) // Specify Event to be dumped to dumpfile.root (read by executing ` root -l draw_dump.C `)
-            mysetup.Dump();
+            mysetup.Dump(i-1);
 /*
         if(dumping_id >=0 && enable_dumping) 
             if(dumping_id<=i-1)
@@ -96,10 +96,10 @@ int main(int argc, char* argv[])
                 if(dumping_id < 0) break;
             }
 */
-        mysetup.Fill_Tree();
+     //   mysetup.Fill_Tree();
         //if(i==1) break;
     }
-    //mysetup.Finalize_Tree(output_rootfile_name);
+ //   mysetup.Finalize_Tree(output_rootfile_name);
 
     bench.Show("full");
 }
