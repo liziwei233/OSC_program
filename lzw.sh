@@ -27,7 +27,8 @@ then
 		if [ -d $path/$name ]
 		then
 			Num=$(ls -l $path/$name | grep "^d" | wc -l)
-			nfile=$(expr $(ls -l $path/$name/${channel}* | grep "^-" | wc -l) - 1)
+			nfile=$(ls -l $path/$name/${channel}* | grep "^-" | wc -l)
+			#nfile=$(expr $(ls -l $path/$name/${channel}* | grep "^-" | wc -l) - 1)
 			echo $Num
 			echo $nfile
 
