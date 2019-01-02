@@ -5,9 +5,9 @@ echo "       ./check.sh \$YourFilePath"
 
 #date="--A1A2B1B2--"
 #date="trace"
-date="0817testn8cm"
+date="0815test"
 
-template=${date}00001.trc
+template=${date}01501.trc
 channel=("C1" "C3" "C4")
 path=$1
 ch1a=$2
@@ -39,10 +39,10 @@ then
 		for ch in ${channel[@]}
 		do	
 		N=$[$(ls -l $path/$dirname/${ch}* | grep "^-" | wc -l)]
-                size=$(stat -c "%s" ${path}/${dirname}/${ch}${date}00000.trc) 
+                size=$(stat -c "%s" ${path}/${dirname}/${ch}${date}01500.trc) 
 		echo "The file numbers is : $N"
 		echo "The file size is : $size"
-	
+
 			for i in $(seq 0 $(expr $N - 1 ))
 			do
 			num=$(printf "%05d\n" $i)
@@ -56,7 +56,7 @@ then
 			cp ${path}/${dirname}/${ch}${template} $name
                         else
                             filesize=$(stat -c "%s" $name)
-                            if [ $filesize -lt $size ]
+                            if [ $filesize -ne $size ]
                             then
 			        echo $name
         			cp ${path}/${dirname}/${ch}${template} $name
@@ -64,7 +64,8 @@ then
 
 			fi
 
-			done	
+			done
+                        
 		 done
 	fi
 	done
@@ -74,10 +75,10 @@ else
 	for ch in ${channel[@]}
 	do	
 	N=$[$(ls -l $path/${ch}* | grep "^-" | wc -l)]
-        size=$(stat -c "%s" ${path}/${ch}${date}00000.trc) 
+        size=$(stat -c "%s" ${path}/${ch}${date}01500.trc) 
 	echo "The file numbers is : $N"
 	echo "The file size is : $size"
-	
+        
 		for i in $(seq 0 $(expr $N - 1 ))
 		do
 		num=$(printf "%05d\n" $i)
@@ -90,7 +91,7 @@ else
 			cp ${path}/${ch}${template} $name
                 else
                     filesize=$(stat -c "%s" $name)
-                    if [ $filesize -lt $size ]
+                    if [ $filesize -ne $size ]
                     then
 		        echo $name
 			cp ${path}/${ch}${template} $name
@@ -99,5 +100,6 @@ else
 		fi
 
 		done
+                
 	 done
 fi	
