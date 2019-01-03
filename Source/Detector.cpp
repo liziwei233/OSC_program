@@ -43,14 +43,17 @@ void Detector::SubstractBaseline(int base_region_end)
     //Find baseline
     double baseline_sum=0;
     double baseline_square_sum=0;
-    for(int i = 0; i < base_region_end; ++i)
+    int base_region_start = base_region_end - 2000;
+    if (base_region_start < 0 ) base_region_start = 40;
+    if (base_region_start > base_region_end) base_region_start = 0;
+    for(int i = base_region_start; i < base_region_end; ++i)
     {
         double y = waveform_y.at(i);
         baseline_sum+=y;
         baseline_square_sum+=y*y;
     }
-    baseline_level = baseline_sum/base_region_end;
-    double baseline_rms_squared = baseline_square_sum/base_region_end - baseline_level*baseline_level ;
+    baseline_level = baseline_sum/(base_region_end-base_region_start);
+    double baseline_rms_squared = baseline_square_sum/(base_region_end-base_region_start) - baseline_level*baseline_level ;
     baseline_rms = baseline_rms_squared > 0 ? TMath::Sqrt(baseline_rms_squared) : 0;
 
     //Subtract baseline

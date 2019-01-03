@@ -20,7 +20,7 @@ void TestBeamSetup::TestBeamAnalysis()
         baseline_region_end = Detectors.at(i)->global_maximum.position;
         //std::cout<<"NofDet="<<i<<",NofPoint="<<Detectors.at(i)->waveform_y.size()<<",baseline_region_end="<<baseline_region_end-200<<std::endl; 
 
-        baseline_region_end-=200;
+        baseline_region_end-=400;
         if(baseline_region_end < 0 )
         baseline_region_end=100.;
 
