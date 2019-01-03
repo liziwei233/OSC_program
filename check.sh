@@ -4,10 +4,10 @@ echo "++Note:"
 echo "       ./check.sh \$YourFilePath"
 
 #date="--A1A2B1B2--"
-#date="trace"
-date="0815test"
+date="trace"
+#date="0815test"
 
-template=${date}01501.trc
+template=${date}00001.trc
 channel=("C1" "C3" "C4")
 path=$1
 ch1a=$2
@@ -39,7 +39,7 @@ then
 		for ch in ${channel[@]}
 		do	
 		N=$[$(ls -l $path/$dirname/${ch}* | grep "^-" | wc -l)]
-                size=$(stat -c "%s" ${path}/${dirname}/${ch}${date}01500.trc) 
+                size=$(stat -c "%s" ${path}/${dirname}/${ch}${template}) 
 		echo "The file numbers is : $N"
 		echo "The file size is : $size"
 
@@ -75,7 +75,7 @@ else
 	for ch in ${channel[@]}
 	do	
 	N=$[$(ls -l $path/${ch}* | grep "^-" | wc -l)]
-        size=$(stat -c "%s" ${path}/${ch}${date}01500.trc) 
+        size=$(stat -c "%s" ${path}/${ch}${template}) 
 	echo "The file numbers is : $N"
 	echo "The file size is : $size"
         
