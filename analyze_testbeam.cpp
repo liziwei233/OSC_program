@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
 //   TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--trace--");
     //TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--A1A2B1B2--",0);
 //    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "0817testn8cm",0);
-    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "trace",0);
+    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "trace",1);
 //    myfile.OpenTriggerChannel(argv[1],atoi(argv[2]),"--trace--",4);
 
     TestBeamSetup mysetup;
