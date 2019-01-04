@@ -79,6 +79,7 @@ void Detector::FindGlobalMaximum(int start, int end)
 
 void Detector::FindStartPoint(int start)
 {
+    start_point.x = 0;
     start_point.y = 0;
     start_point.position = 1;
     for(int i = global_maximum.position; i >= start; --i)
@@ -96,6 +97,8 @@ void Detector::FindStartPoint(int start)
 void Detector::FindEndPoint(int start)
 {
     int N = waveform_y.size();
+
+    end_point.x = 0;
     end_point.y = 0;
     end_point.position = N-1;
 
