@@ -17,13 +17,13 @@ Detector::~Detector()
     if(pre_filter_backup)
     {
         delete pre_filter_backup;
+    }
         CFDtime->clear();delete CFDtime;
         CFDfrac->clear();delete CFDfrac;
         CFDfailed->clear();delete CFDfailed;
         LEDtime->clear();delete LEDtime;
         LEDthrd->clear();delete LEDthrd;
-        LEDfailed->clear();delete CFDfailed;
-    }
+        LEDfailed->clear();delete LEDfailed;
 }
 
 void Detector::SetWaveY(std::vector<double> wave)
@@ -391,7 +391,7 @@ bool Detector::FitPol3(double* x, double* y, double* fit_parameters)
 
 void Detector::TimeInformation(){
    
-   for(int i=0;i++;i<8)
+   for(int i=0;i<8;i++)
    {
 
     CFD = Time(0.05*(i+1),0);
@@ -400,7 +400,7 @@ void Detector::TimeInformation(){
     CFDfailed->push_back(CFD.failed);
    }
 
-   for(int i=0;i++;i<14)
+   for(int i=0;i<14;i++)
    {
        LED = Time(0.03+0.02*i,1);
        LEDthrd->push_back(0.03+0.02*i);
