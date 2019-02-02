@@ -14,6 +14,5 @@ class TestBeamSetup : public DetectorSetup
         void init_tree();
         void tree_add_tracks(int& NumberofTracks, Track& OneTrack);
         void init(int& NumberofTracks, Track& OneTrack);
-
 };
 #endif

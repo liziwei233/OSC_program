@@ -4,8 +4,8 @@ echo "++Note:"
 echo "       ./check.sh \$YourFilePath"
 
 #date="--A1A2B1B2--"
-#date="trace"
-date="0818test_th80mv"
+date="trace"
+#date="0818test_th80mv"
 
 template=${date}00001.trc
 channel=("C1" "C3" "C4")

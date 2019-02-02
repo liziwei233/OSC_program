@@ -97,7 +97,7 @@ void Detector::FindStartPoint(int start)
 void Detector::FindEndPoint(int start)
 {
     int N = waveform_y.size();
-
+    
     end_point.x = 0;
     end_point.y = 0;
     end_point.position = N-1;
@@ -157,7 +157,7 @@ void Detector::FindElectronPeakEndPointSimulation()
 
         e_peak_end.position = j;
         e_peak_end.y = waveform_y.at(j);
-        
+
 
         for(int i = global_maximum.position + 3; i < j; ++i)
         {
@@ -209,6 +209,42 @@ void Detector::CalculateCharges()
     for(int i = start_point.position; i <= end_point.position; ++i)
         charge_all += waveform_y.at(i);
     charge_all *= conversion;
+}
+
+WaveformPoint Detector::FindTimingPoint(double fac,int partype)
+{
+    //if type==0, the first parameter is a ratio of amplitude;
+    //if typer==1,the first parameter is a fixed threshold of amplitude;
+
+    WaveformPoint thePoint;
+    thePoint.y=-1111111;
+    thePoint.position=-1111111;
+    thePoint.x=-1111111;
+    double cf;
+    if (partype==0){
+        cf = fac*global_maximum.y;}
+    else {
+        cf = fac;}
+
+    for(int i = global_maximum.position ; i > start_point.position && i>1; --i)
+    {
+        if( waveform_y.at(i) - cf > 0 && waveform_y.at(i-1) - cf < 0 )
+        {
+            double x1 = waveform_x.at(i-1);
+            double x2 = waveform_x.at(i);
+            double y1 = waveform_y.at(i-1);
+            double y2 = waveform_y.at(i);
+            //naive_time = linear_interpolation(x1,x2,y1,y2,cf);
+            thePoint.y = waveform_y.at(i);
+            thePoint.position = i;
+            thePoint.x = waveform_x.at(i);
+            break;
+        }
+    }
+
+
+
+    return thePoint;
 }
 
 void Detector::FindNaiveTiming()
@@ -292,7 +328,7 @@ void Detector::TimeInflection()
     int k = max_derivative.position;
     while(k-2 < 0) k++;
     while( k+2 >= waveform_y.size() ) k--;
-    
+
     double y[4],x[4];
     double x_offset = waveform_x.at(k-2); //scale for numerical purposes
     for(int i = 0 ; i < 4; ++i)
@@ -334,19 +370,109 @@ bool Detector::FitPol3(double* x, double* y, double* fit_parameters)
 
     for(int i = 0; i < 4; ++i)
         fit_parameters[i] = pars[i];
-    
+
     return 1;
+}
+
+void Detector::TimeInformation(){
+    Lead_percent_5 = Time(0.05,0);
+    Lead_percent_10 = Time(0.1,0);
+    Lead_percent_20 = Time(0.2,0);
+    Lead_percent_30 = Time(0.3,0);
+    Lead_percent_50 = Time(0.5,0);
+
+    Lead_thrd_50 = Time(0.05,1);
+    Lead_thrd_100 = Time(0.1,1);
+    Lead_thrd_150 = Time(0.15,1);
+    Lead_thrd_200 = Time(0.2,1);
+    Lead_thrd_250 = Time(0.25,1);
+    Lead_thrd_400 = Time(0.4,1);
+}
+
+TimingInfo Detector::Time(double fac,int partype){
+
+    //if(type > 0) return;
+
+    //if type==0, the first parameter is a ratio of amplitude;
+    //if typer==1,the first parameter is a fixed threshold of amplitude;
+
+    TimingInfo Timing;
+    Timing.x = 0;
+    Timing.y = 0;
+    Timing.slope = 0;
+    Timing.intersect = 0;
+    Timing.timing = 0;
+    Timing.failed = 0;
+    for(int i = 0; i < 4; ++i) Timing.parameters[i] = 0;
+    bool use_filtered_waveform = 0;
+    WaveformPoint Point = FindTimingPoint(fac,partype);
+    int k = Point.position;
+    if (k<0) {Timing.failed = 1;
+    return Timing;}
+    while(k-3 < 0) k++;
+    while( k+3 >= waveform_y.size() ) k--;
+
+    double yArray[4],xArray[4];
+    double x_offset = waveform_x.at(k-2); //scale for numerical purposes
+    for(int i = 0 ; i < 4; ++i)
+    {
+        xArray[i] = waveform_x.at(k-1+i) - x_offset;
+        yArray[i] = waveform_y.at(k-1+i);
+    }
+    double par[4];
+    bool success = FitPol3(xArray,yArray,par);
+    if(!success)
+    {
+        Timing.failed = 1;
+        return Timing;
+    }
+
+    double par_inverse[4];
+    success = FitPol3(yArray,xArray,par_inverse);
+    if(!success)
+    {
+        Timing.failed = 1;
+        return Timing;
+    }
+
+    double x = par_inverse[0];
+    double y;
+    if(partype==0) y = fac*global_maximum.y;
+    else y = fac;
+    double y_pow = 1;
+    for(int i = 1 ; i < 4; ++i)
+    {
+        y_pow*=y; 
+        x+=par_inverse[i]*y_pow;
+    }
+    double ye = par[0];
+    double x_pow = 1;
+    for(int i = 1; i < 4; ++i)
+    {
+        x_pow *= x;
+        ye += par[i]*x_pow; 
+    }
+
+    Timing.x = x + x_offset;
+    Timing.y = ye;
+    Timing.slope = par[1] + 2*par[2]*x + 3*par[3]*x*x;
+    Timing.intersect = Timing.y - Timing.slope*Timing.x;
+    Timing.timing = -Timing.intersect/Timing.slope;
+    for(int i = 0; i < 4; ++i) Timing.parameters[i] = par[i];
+
+    return Timing;
+
 }
 
 void Detector::TimeTwentyPercent()
 {
-    TwentyPercent.failed = 0;
     //if(type > 0) return;
     bool use_filtered_waveform = 0;
-    int k = naive_point.position;
+    WaveformPoint Point20 = FindTimingPoint(0.2,0);
+    int k = Point20.position;
     while(k-3 < 0) k++;
     while( k+3 >= waveform_y.size() ) k--;
-    
+
     double y[4],x[4];
     double x_offset = waveform_x.at(k-2); //scale for numerical purposes
     for(int i = 0 ; i < 4; ++i)
@@ -361,7 +487,7 @@ void Detector::TimeTwentyPercent()
         TwentyPercent.failed = 1;
         return;
     }
-    
+
     double par_inverse[4];
     success = FitPol3(y,x,par_inverse);
     if(!success)
@@ -424,7 +550,7 @@ void Detector::TimeSigmoid()
     pars[1]=(x[end-start] + x[1])/2;
     pars[2]=5./(x[end-start] - x[1]);
     pars[3]=0.;
-    
+
     TF1 fd_fit("fd_fit", fermi_dirac, x[0], x[Npoints-1], 4);
     fd_fit.SetParameters(pars[0],pars[1],pars[2],pars[3]);
     waveform_graph.Fit("fd_fit","qR");
@@ -454,7 +580,7 @@ void Detector::FilterWaveformFFT(int start, int N, double biggest_frequency_not_
 {
     *pre_filter_backup = *this;
     pre_filter_backup->pre_filter_backup = 0;
-    
+
     double temp_wave[N];
     double temp_x[N];
     int end = start + N;
@@ -468,7 +594,7 @@ void Detector::FilterWaveformFFT(int start, int N, double biggest_frequency_not_
     fft_forward->SetPoints(temp_wave);
     fft_forward->Transform();
 
-    
+
     double fourier_real[N];
     double fourier_imag[N];
     fft_forward->GetPointsComplex(fourier_real, fourier_imag);
@@ -568,56 +694,56 @@ void Detector::FindWidth()
 
 
 /* unsafe
-void Detector::FilterWaveformFFT_test()
+   void Detector::FilterWaveformFFT_test()
+   {
+ *pre_filter_backup = *this;
+ pre_filter_backup->pre_filter_backup = 0;
+
+ int N = waveform_y.size();
+//round to next power of two
+N--;
+N |=  N >> 1;
+N |=  N >> 2;
+N |=  N >> 4;
+N |=  N >> 1;
+N |=  N >> 16;
+N++;
+//================
+double temp_wave[N];
+double temp_x[N];
+double delta = waveform_x.at(1) -  waveform_x.at(0);
+
+for(int i = 0 ; i < waveform_y.size(); ++i)
+temp_wave[i] = waveform_y.at(i);
+for(int i = waveform_y.size() ; i < N; ++i)
+temp_wave[i] = 0.;
+
+TVirtualFFT *fft_forward = TVirtualFFT::FFT(1, &N, "R2C M");
+fft_forward->SetPoints(temp_wave);
+fft_forward->Transform();
+
+double fourier_real[N];
+double fourier_imag[N];
+fft_forward->GetPointsComplex(fourier_real, fourier_imag);
+
+for(int i = 0; i < N; ++i)
+{   
+double frequency = i/delta/N;
+if(frequency > 1)//in GHz
 {
-    *pre_filter_backup = *this;
-    pre_filter_backup->pre_filter_backup = 0;
-    
-    int N = waveform_y.size();
-    //round to next power of two
-    N--;
-    N |=  N >> 1;
-    N |=  N >> 2;
-    N |=  N >> 4;
-    N |=  N >> 1;
-    N |=  N >> 16;
-    N++;
-    //================
-    double temp_wave[N];
-    double temp_x[N];
-    double delta = waveform_x.at(1) -  waveform_x.at(0);
+fourier_real[i] = 0;
+fourier_imag[i] = 0;
+}
+}
 
-    for(int i = 0 ; i < waveform_y.size(); ++i)
-        temp_wave[i] = waveform_y.at(i);
-    for(int i = waveform_y.size() ; i < N; ++i)
-        temp_wave[i] = 0.;
+TVirtualFFT *fft_backward = TVirtualFFT::FFT(1, &N, "C2R M");
+fft_backward->SetPointsComplex(fourier_real, fourier_imag);
+fft_backward->Transform();
 
-    TVirtualFFT *fft_forward = TVirtualFFT::FFT(1, &N, "R2C M");
-    fft_forward->SetPoints(temp_wave);
-    fft_forward->Transform();
-    
-    double fourier_real[N];
-    double fourier_imag[N];
-    fft_forward->GetPointsComplex(fourier_real, fourier_imag);
-
-    for(int i = 0; i < N; ++i)
-    {   
-        double frequency = i/delta/N;
-        if(frequency > 1)//in GHz
-        {
-            fourier_real[i] = 0;
-            fourier_imag[i] = 0;
-        }
-    }
-
-    TVirtualFFT *fft_backward = TVirtualFFT::FFT(1, &N, "C2R M");
-    fft_backward->SetPointsComplex(fourier_real, fourier_imag);
-    fft_backward->Transform();
-
-    waveform_y.clear();
-    for(int i = 0; i < waveform_x.size(); ++i)
-    {
-        waveform_y.push_back(fft_backward->GetPointReal(i)/N);
-    }
+waveform_y.clear();
+for(int i = 0; i < waveform_x.size(); ++i)
+{
+waveform_y.push_back(fft_backward->GetPointReal(i)/N);
+}
 }
 */
