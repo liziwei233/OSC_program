@@ -109,13 +109,14 @@ class Detector
     TimingInfo Inflection;
     TimingInfo TwentyPercent;
     SigmoidInfo Sigmoid;
-    std::vector<double>* CFDtime;
-    std::vector<double>* CFDfrac;
-    std::vector<int>* CFDfailed;
+    
+    double CFDtime[8];
+    double CFDfrac[8];
+    bool CFDfailed[8];
 
-    std::vector<double>* LEDtime;
-    std::vector<double>* LEDthrd;
-    std::vector<int>* LEDfailed;
+    double LEDtime[14];
+    double LEDthrd[14];
+    bool LEDfailed[14];
 
     TimingInfo CFD;
     TimingInfo LED;

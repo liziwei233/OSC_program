@@ -373,24 +373,30 @@ void TestBeamSetup::init_tree()
         OutTree->Branch(varname.c_str(),&det->rise_time,leafname.c_str());
 
         varname = typestr + "CFDtime";
+        leafname = varname + "[8]/D";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),det->CFDtime);
+            OutTree->Branch(varname.c_str(),det->CFDtime,leafname.c_str());
         varname = typestr + "CFDfrac";
+        leafname = varname + "[8]/D";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),det->CFDfrac);
+            OutTree->Branch(varname.c_str(),det->CFDfrac,leafname.c_str());
         varname = typestr + "CFDfailed";
+        leafname = varname + "[8]/O";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),det->CFDfailed);
+            OutTree->Branch(varname.c_str(),det->CFDfailed,leafname.c_str());
         
         varname = typestr + "LEDtime";
+        leafname = varname + "[14]/D";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),det->LEDtime);
+            OutTree->Branch(varname.c_str(),det->LEDtime,leafname.c_str());
         varname = typestr + "LEDthrd";
+        leafname = varname + "[14]/D";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),det->LEDthrd);
+            OutTree->Branch(varname.c_str(),det->LEDthrd,leafname.c_str());
         varname = typestr + "LEDfailed";
+        leafname = varname + "[14]/O";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),det->LEDfailed);
+            OutTree->Branch(varname.c_str(),det->LEDfailed,leafname.c_str());
 /*
         varname = typestr + "percent_5_failed";
         leafname = varname + "/O";

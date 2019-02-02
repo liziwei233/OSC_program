@@ -3,13 +3,6 @@
 Detector::Detector()
 {
     pre_filter_backup = 0;
-    CFDtime = new std::vector<double>;
-    CFDfrac = new std::vector<double>;
-    CFDfailed = new std::vector<int>;
-    
-    LEDtime = new std::vector<double>;
-    LEDthrd = new std::vector<double>;
-    LEDfailed = new std::vector<int>;
 }
 
 Detector::~Detector()
@@ -18,12 +11,6 @@ Detector::~Detector()
     {
         delete pre_filter_backup;
     }
-        CFDtime->clear();delete CFDtime;
-        CFDfrac->clear();delete CFDfrac;
-        CFDfailed->clear();delete CFDfailed;
-        LEDtime->clear();delete LEDtime;
-        LEDthrd->clear();delete LEDthrd;
-        LEDfailed->clear();delete LEDfailed;
 }
 
 void Detector::SetWaveY(std::vector<double> wave)
@@ -395,17 +382,17 @@ void Detector::TimeInformation(){
    {
 
     CFD = Time(0.05*(i+1),0);
-    CFDfrac->push_back(0.05*(i+1));
-    CFDtime->push_back(CFD.x);
-    CFDfailed->push_back(CFD.failed);
+    CFDfrac[i]=0.05*(i+1);
+    CFDtime[i]=CFD.x;
+    CFDfailed[i]=CFD.failed;
    }
 
    for(int i=0;i<14;i++)
    {
        LED = Time(0.03+0.02*i,1);
-       LEDthrd->push_back(0.03+0.02*i);
-       LEDtime->push_back(LED.x);
-       LEDfailed->push_back(LED.failed);
+       LEDthrd[i]=0.03+0.02*i;
+       LEDtime[i]=LED.x;
+       LEDfailed[i]=LED.failed;
 
    }
    /*
