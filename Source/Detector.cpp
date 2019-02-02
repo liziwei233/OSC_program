@@ -3,12 +3,27 @@
 Detector::Detector()
 {
     pre_filter_backup = 0;
+    CFDtime = new std::vector<double>;
+    CFDfrac = new std::vector<double>;
+    CFDfailed = new std::vector<int>;
+    
+    LEDtime = new std::vector<double>;
+    LEDthrd = new std::vector<double>;
+    LEDfailed = new std::vector<int>;
 }
 
 Detector::~Detector()
 {
     if(pre_filter_backup)
+    {
         delete pre_filter_backup;
+        CFDtime->clear();delete CFDtime;
+        CFDfrac->clear();delete CFDfrac;
+        CFDfailed->clear();delete CFDfailed;
+        LEDtime->clear();delete LEDtime;
+        LEDthrd->clear();delete LEDthrd;
+        LEDfailed->clear();delete CFDfailed;
+    }
 }
 
 void Detector::SetWaveY(std::vector<double> wave)
@@ -375,18 +390,48 @@ bool Detector::FitPol3(double* x, double* y, double* fit_parameters)
 }
 
 void Detector::TimeInformation(){
-    Lead_percent_5 = Time(0.05,0);
-    Lead_percent_10 = Time(0.1,0);
-    Lead_percent_20 = Time(0.2,0);
-    Lead_percent_30 = Time(0.3,0);
-    Lead_percent_50 = Time(0.5,0);
+   
+   for(int i=0;i++;i<8)
+   {
 
+    CFD = Time(0.05*(i+1),0);
+    CFDfrac->push_back(0.05*(i+1));
+    CFDtime->push_back(CFD.x);
+    CFDfailed->push_back(CFD.failed);
+   }
+
+   for(int i=0;i++;i<14)
+   {
+       LED = Time(0.03+0.02*i,1);
+       LEDthrd->push_back(0.03+0.02*i);
+       LEDtime->push_back(LED.x);
+       LEDfailed->push_back(LED.failed);
+
+   }
+   /*
+    Lead_percent_10 = Time(0.1,0);
+    Lead_percent_15 = Time(0.15,0);
+    Lead_percent_20 = Time(0.2,0);
+    Lead_percent_25 = Time(0.25,0);
+    Lead_percent_30 = Time(0.3,0);
+    Lead_percent_35 = Time(0.35,0);
+    Lead_percent_40 = Time(0.4,0);
+
+    Lead_thrd_30 = Time(0.03,1);
     Lead_thrd_50 = Time(0.05,1);
-    Lead_thrd_100 = Time(0.1,1);
+    Lead_thrd_70 = Time(0.07,1);
+    Lead_thrd_90 = Time(0.09,1);
+    Lead_thrd_110 = Time(0.11,1);
+    Lead_thrd_130 = Time(0.13,1);
     Lead_thrd_150 = Time(0.15,1);
-    Lead_thrd_200 = Time(0.2,1);
+    Lead_thrd_170 = Time(0.17,1);
+    Lead_thrd_190 = Time(0.19,1);
+    Lead_thrd_210 = Time(0.21,1);
+    Lead_thrd_230 = Time(0.23,1);
     Lead_thrd_250 = Time(0.25,1);
+    Lead_thrd_300 = Time(0.30,1);
     Lead_thrd_400 = Time(0.4,1);
+    */
 }
 
 TimingInfo Detector::Time(double fac,int partype){

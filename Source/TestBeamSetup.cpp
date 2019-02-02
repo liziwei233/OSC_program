@@ -372,7 +372,31 @@ void TestBeamSetup::init_tree()
         leafname = varname + "/D";
         OutTree->Branch(varname.c_str(),&det->rise_time,leafname.c_str());
 
+        varname = typestr + "CFDtime";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),det->CFDtime);
+        varname = typestr + "CFDfrac";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),det->CFDfrac);
+        varname = typestr + "CFDfailed";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),det->CFDfailed);
         
+        varname = typestr + "LEDtime";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),det->LEDtime);
+        varname = typestr + "LEDthrd";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),det->LEDthrd);
+        varname = typestr + "LEDfailed";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),det->LEDfailed);
+/*
+        varname = typestr + "percent_5_failed";
+        leafname = varname + "/O";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_percent_5.failed,leafname.c_str());
+
         varname = typestr + "percent_5";
         leafname = varname + "/D";
         if(is_filter || type < 0)
@@ -393,6 +417,16 @@ void TestBeamSetup::init_tree()
         if(is_filter || type < 0)
             OutTree->Branch(varname.c_str(),&det->Lead_percent_10.failed,leafname.c_str());
 
+        varname = typestr + "percent_15";
+        leafname = varname + "/D";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_percent_15.x,leafname.c_str());
+
+        varname = typestr + "percent_15_failed";
+        leafname = varname + "/O";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_percent_15.failed,leafname.c_str());
+
         varname = typestr + "percent_20";
         leafname = varname + "/D";
         if(is_filter || type < 0)
@@ -403,6 +437,16 @@ void TestBeamSetup::init_tree()
         if(is_filter || type < 0)
             OutTree->Branch(varname.c_str(),&det->Lead_percent_20.failed,leafname.c_str());
 
+        varname = typestr + "percent_25";
+        leafname = varname + "/D";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_percent_25.x,leafname.c_str());
+
+        varname = typestr + "percent_25_failed";
+        leafname = varname + "/O";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_percent_25.failed,leafname.c_str());
+            
         varname = typestr + "percent_30";
         leafname = varname + "/D";
         if(is_filter || type < 0)
@@ -413,15 +457,35 @@ void TestBeamSetup::init_tree()
         if(is_filter || type < 0)
             OutTree->Branch(varname.c_str(),&det->Lead_percent_30.failed,leafname.c_str());
 
-        varname = typestr + "percent_50";
+        varname = typestr + "percent_35";
         leafname = varname + "/D";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_50.x,leafname.c_str());
+            OutTree->Branch(varname.c_str(),&det->Lead_percent_35.x,leafname.c_str());
 
-        varname = typestr + "percent_50_failed";
+        varname = typestr + "percent_35_failed";
         leafname = varname + "/O";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_50.failed,leafname.c_str());
+            OutTree->Branch(varname.c_str(),&det->Lead_percent_35.failed,leafname.c_str());
+            
+        varname = typestr + "percent_40";
+        leafname = varname + "/D";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_percent_40.x,leafname.c_str());
+
+        varname = typestr + "percent_40_failed";
+        leafname = varname + "/O";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_percent_40.failed,leafname.c_str());
+
+        varname = typestr + "thrd_30";
+        leafname = varname + "/D";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_thrd_30.x,leafname.c_str());
+
+        varname = typestr + "thrd_30_failed";
+        leafname = varname + "/O";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_thrd_30.failed,leafname.c_str());
 
         varname = typestr + "thrd_50";
         leafname = varname + "/D";
@@ -433,15 +497,35 @@ void TestBeamSetup::init_tree()
         if(is_filter || type < 0)
             OutTree->Branch(varname.c_str(),&det->Lead_thrd_50.failed,leafname.c_str());
 
-        varname = typestr + "thrd_100";
+        varname = typestr + "thrd_70";
         leafname = varname + "/D";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_100.x,leafname.c_str());
+            OutTree->Branch(varname.c_str(),&det->Lead_thrd_70.x,leafname.c_str());
 
-        varname = typestr + "thrd_100_failed";
+        varname = typestr + "thrd_70_failed";
         leafname = varname + "/O";
         if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_100.failed,leafname.c_str());
+            OutTree->Branch(varname.c_str(),&det->Lead_thrd_70.failed,leafname.c_str());
+
+        varname = typestr + "thrd_90";
+        leafname = varname + "/D";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_thrd_90.x,leafname.c_str());
+
+        varname = typestr + "thrd_90_failed";
+        leafname = varname + "/O";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_thrd_90.failed,leafname.c_str());
+
+        varname = typestr + "thrd_110";
+        leafname = varname + "/D";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_thrd_110.x,leafname.c_str());
+
+        varname = typestr + "thrd_110_failed";
+        leafname = varname + "/O";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),&det->Lead_thrd_110.failed,leafname.c_str());
 
         varname = typestr + "thrd_150";
         leafname = varname + "/D";
@@ -483,7 +567,7 @@ void TestBeamSetup::init_tree()
         if(is_filter || type < 0)
             OutTree->Branch(varname.c_str(),&det->Lead_thrd_400.failed,leafname.c_str());
 
-
+*/
         if(type > 0)
         {
             varname = typestr + "naive_time";

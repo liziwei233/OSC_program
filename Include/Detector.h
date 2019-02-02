@@ -29,6 +29,8 @@ struct TimingInfo
     bool failed = 0;
 };
 
+
+
 struct SigmoidInfo
 {
     TF1 fit_func;
@@ -107,17 +109,38 @@ class Detector
     TimingInfo Inflection;
     TimingInfo TwentyPercent;
     SigmoidInfo Sigmoid;
+    std::vector<double>* CFDtime;
+    std::vector<double>* CFDfrac;
+    std::vector<int>* CFDfailed;
+
+    std::vector<double>* LEDtime;
+    std::vector<double>* LEDthrd;
+    std::vector<int>* LEDfailed;
+
+    TimingInfo CFD;
+    TimingInfo LED;
     TimingInfo Lead_percent_5;
     TimingInfo Lead_percent_10;
+    TimingInfo Lead_percent_15;
     TimingInfo Lead_percent_20;
+    TimingInfo Lead_percent_25;
     TimingInfo Lead_percent_30;
-    TimingInfo Lead_percent_50;
+    TimingInfo Lead_percent_35;
+    TimingInfo Lead_percent_40;
 
+    TimingInfo Lead_thrd_30;
     TimingInfo Lead_thrd_50;
-    TimingInfo Lead_thrd_100;
+    TimingInfo Lead_thrd_70;
+    TimingInfo Lead_thrd_90;
+    TimingInfo Lead_thrd_110;
+    TimingInfo Lead_thrd_130;
     TimingInfo Lead_thrd_150;
-    TimingInfo Lead_thrd_200;
+    TimingInfo Lead_thrd_170;
+    TimingInfo Lead_thrd_190;
+    TimingInfo Lead_thrd_210;
+    TimingInfo Lead_thrd_230;
     TimingInfo Lead_thrd_250;
+    TimingInfo Lead_thrd_300;
     TimingInfo Lead_thrd_400;
 };
 
