@@ -389,8 +389,8 @@ void Detector::TimeInformation(){
 
    for(int i=0;i<14;i++)
    {
-       LED = Time(0.03+0.02*i,1);
-       LEDthrd[i]=0.03+0.02*i;
+       LED = Time(0.05+0.05*i,1);
+       LEDthrd[i]=0.05+0.05*i;
        LEDtime[i]=LED.x;
        LEDfailed[i]=LED.failed;
 

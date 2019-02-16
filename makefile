@@ -17,6 +17,7 @@ laser: $(OBJECTS) analyze_laser average_laser
 calibration: $(OBJECTS) analyze_calibration average_calibration
 sim: $(OBJECTS) analyze_simulation average_simulation 
 testbeam: $(OBJECTS) analyze_testbeam average_testbeam 
+lab: $(OBJECTS) analyze_testbeam
 
 average_laser: $(OBJECTS) average_laser.cpp 
 	@echo "Building executable 'average_laser'..."
