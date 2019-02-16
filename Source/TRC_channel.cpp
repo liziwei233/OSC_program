@@ -98,13 +98,20 @@ int TRC_channel::readLeCroyBinary(FILE * file, wavedesc * desc, std::vector<doub
     //END OF USERTEXT BLOCK
     
     //BEGIN OF TRIGTIME ARRAY BLOCK
-    for(int ii = 0; ii < header.subarray_count && header.subarray_count > 1; ii++){
+    if( header.subarray_count > 1){
+    for(int ii = 0; ii < header.subarray_count ; ii++){
         double val0, val1;
         if(ffread(header.comm_order1, &val0, 8, file) != 1) return 3;
         if(ffread(header.comm_order1, &val1, 8, file) != 1) return 4;
         triggerTime -> push_back(val0);
         triggerOffset -> push_back(val1);
+        }
     }
+    else
+    {
+        triggerTime -> push_back(0);
+        triggerOffset -> push_back(0);
+    } 
     //END OF TRIGTIME ARRAY BLOCK
     
     //BEGIN OF RISTIME ARRAY BLOCK
