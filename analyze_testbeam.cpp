@@ -33,7 +33,7 @@ int main(int argc, char* argv[])
 
     //Specify the channels written in the files
     std::vector<int> channel_IDs;
-    channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
+//    channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
     //channel_IDs.push_back(2); //<- Channel 1 (mcp1)
     channel_IDs.push_back(3); //<- Channel 2 (mcp2)
     channel_IDs.push_back(4); //<- Channel 2 (mcp2)
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
     mysetup.CreateMCP();
     mysetup.CreateMCP();
 //    mysetup.CreateMCP();
-    mysetup.CreateMCP();
+//    mysetup.CreateMCP();
 //    mysetup.CreateMCP();
 
 //    mysetup.CreateMM();
