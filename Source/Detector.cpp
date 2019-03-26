@@ -47,7 +47,7 @@ void Detector::SubstractBaseline(int base_region_end)
     double baseline_square_sum=0;
     int base_region_start = base_region_end - 2000;
     if (base_region_start < 0 ) base_region_start = 40;
-    if (base_region_start > base_region_end) base_region_start = 0;
+    if (base_region_start >= base_region_end) base_region_start = 0;
     for(int i = base_region_start; i < base_region_end; ++i)
     {
         double y = waveform_y.at(i);
@@ -196,6 +196,8 @@ void Detector::CalculateCharges()
     double Ohms = 50;
     double step = waveform_x.at(1)- waveform_x.at(0);
     double conversion = step/Ohms*1000;
+    double leftpos=0;
+    double rightpos=0;
 
     charge_leading_edge=0;
     for(int i = start_point.position; i <= global_maximum.position; ++i)
@@ -207,10 +209,41 @@ void Detector::CalculateCharges()
         charge_e_peak += waveform_y.at(i);
     charge_e_peak *= conversion;
 
-    charge_all=0;
+    //charge_all=0;
+    memset(charge_all,0,sizeof(charge_all));
+    //
+    //* charge1 --dynamic range
     for(int i = start_point.position; i <= end_point.position; ++i)
-        charge_all += waveform_y.at(i);
-    charge_all *= conversion;
+        charge_all[0] += waveform_y.at(i);
+    charge_all[0] *= conversion;
+    //
+    //* charge1 --10ns range
+    leftpos=global_maximum.position-4000/25;
+    rightpos=global_maximum.position+6000/25;
+    if(leftpos<1) leftpos=1;
+    if(rightpos>=waveform_y.size()) rightpos=waveform_y.size()-1;
+    for(int i = leftpos; i <= rightpos; ++i)
+        charge_all[1] += waveform_y.at(i);
+    charge_all[1] *= conversion;
+    //
+    //* charge1 --30ns range
+    leftpos=global_maximum.position-12000/25;
+    rightpos=global_maximum.position+18000/25;
+    if(leftpos<1) leftpos=1;
+    if(rightpos>=waveform_y.size()) rightpos=waveform_y.size()-1;
+    for(int i = leftpos; i <= rightpos; ++i)
+        charge_all[2] += waveform_y.at(i);
+    charge_all[2] *= conversion;
+    //
+    //* charge1 --50ns range
+    leftpos=global_maximum.position-20000/25;
+    rightpos=global_maximum.position+30000/25;
+    if(leftpos<1) leftpos=1;
+    if(rightpos>=waveform_y.size()) rightpos=waveform_y.size()-1;
+    for(int i = leftpos; i <= rightpos; ++i)
+        charge_all[3] += waveform_y.at(i);
+    charge_all[3] *= conversion;
+
 }
 
 WaveformPoint Detector::FindTimingPoint(double fac,int partype)

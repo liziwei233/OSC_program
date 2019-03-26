@@ -100,7 +100,7 @@ class Detector
 
     double charge_leading_edge;
     double charge_e_peak;
-    double charge_all;
+    double charge_all[4];
 
     double naive_time;//ns
     double rise_time;// defined from 20% to 80% height of the pulse

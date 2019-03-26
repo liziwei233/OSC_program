@@ -365,8 +365,8 @@ void TestBeamSetup::init_tree()
            OutTree->Branch(varname.c_str(),&det->charge_e_peak,leafname.c_str());
            */
         varname = typestr + "all_charge";
-        leafname = varname + "/D";
-        OutTree->Branch(varname.c_str(),&det->charge_all,leafname.c_str());
+        leafname = varname + "[4]/D";
+        OutTree->Branch(varname.c_str(),det->charge_all,leafname.c_str());
 
         varname = typestr + "rise_time";
         leafname = varname + "/D";
