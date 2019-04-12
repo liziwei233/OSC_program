@@ -30,16 +30,17 @@ int main(int argc, char* argv[])
         //enable_dumping = 1;
         dumping_id = atoi(argv[4]);
     }
-    int file_id = dumping_id/100;
+    int eventN = 50;
+    int file_id = dumping_id/eventN;
     //Specify the channels written in the files
     std::vector<int> channel_IDs;
 //    channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
-//    channel_IDs.push_back(2); //<- Channel 1 (mcp1)
+    channel_IDs.push_back(2); //<- Channel 1 (mcp1)
     channel_IDs.push_back(3); //<- Channel 2 (mcp2)
-    channel_IDs.push_back(4); //<- Channel 2 (mcp2)
+//    channel_IDs.push_back(4); //<- Channel 2 (mcp2)
 //   TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--trace--");
 //    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--A1A2B1B2--",0);
-    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "trace",file_id);
+    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "Trace",file_id);
 //    myfile.OpenTriggerChannel(argv[1],atoi(argv[2]),"--trace--",4);
 
     TestBeamSetup mysetup;
@@ -74,7 +75,7 @@ int main(int argc, char* argv[])
     {
         i++;
 
-        printf("\rEvent is: %.5d ===============================================",file_id*100+i-1);//magic 
+        printf("\rEvent is: %.5d ===============================================",file_id*eventN+i-1);//magic 
 
 
         //std::cout << "trignum = " << mysetup.TriggerNumber << std::endl;
@@ -86,8 +87,8 @@ int main(int argc, char* argv[])
 
      //   mysetup.TestBeamAnalysis();
 
-        if(file_id*100+i-1==dumping_id) // Specify Event to be dumped to dumpfile.root (read by executing ` root -l draw_dump.C `)
-            mysetup.Dump(file_id*100+i-1);
+        if(file_id*eventN+i-1==dumping_id) // Specify Event to be dumped to dumpfile.root (read by executing ` root -l draw_dump.C `)
+            mysetup.Dump(file_id*eventN+i-1);
 /*
         if(dumping_id >=0 && enable_dumping) 
             if(dumping_id<=i-1)
