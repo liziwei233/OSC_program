@@ -194,7 +194,7 @@ void Detector::FindElectronPeakEndPointSimulation()
 void Detector::CalculateCharges()
 {
     double Ohms = 50;
-    double step = waveform_x.at(1)- waveform_x.at(0);
+    double step = waveform_x.at(1)- waveform_x.at(0);//the unit is ns
     double conversion = step/Ohms*1000;
     double leftpos=0;
     double rightpos=0;
@@ -218,8 +218,14 @@ void Detector::CalculateCharges()
     charge_all[0] *= conversion;
     //
     //* charge1 --10ns range
-    leftpos=global_maximum.position-4000/25;
-    rightpos=global_maximum.position+6000/25;
+    //leftpos=global_maximum.position-4000/25;
+    //rightpos=global_maximum.position+6000/25;
+    leftpos=waveform_y.size()/2-4/step;
+    rightpos=waveform_y.size()/2+6/step;
+    //std::cout<<step<<std::endl;
+    //std::cout<<waveform_y.size()/2<<std::endl;
+    //std::cout<<leftpos<<std::endl;
+    //std::cout<<rightpos<<std::endl;
     if(leftpos<1) leftpos=1;
     if(rightpos>=waveform_y.size()) rightpos=waveform_y.size()-1;
     for(int i = leftpos; i <= rightpos; ++i)
@@ -227,8 +233,8 @@ void Detector::CalculateCharges()
     charge_all[1] *= conversion;
     //
     //* charge1 --30ns range
-    leftpos=global_maximum.position-12000/25;
-    rightpos=global_maximum.position+18000/25;
+    leftpos=waveform_y.size()/2-12/step;
+    rightpos=waveform_y.size()/2+18/step;
     if(leftpos<1) leftpos=1;
     if(rightpos>=waveform_y.size()) rightpos=waveform_y.size()-1;
     for(int i = leftpos; i <= rightpos; ++i)
@@ -236,8 +242,8 @@ void Detector::CalculateCharges()
     charge_all[2] *= conversion;
     //
     //* charge1 --50ns range
-    leftpos=global_maximum.position-20000/25;
-    rightpos=global_maximum.position+30000/25;
+    leftpos=waveform_y.size()/2-20/step;
+    rightpos=waveform_y.size()/2+30/step;
     if(leftpos<1) leftpos=1;
     if(rightpos>=waveform_y.size()) rightpos=waveform_y.size()-1;
     for(int i = leftpos; i <= rightpos; ++i)
