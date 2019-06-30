@@ -4,7 +4,7 @@ echo "++Note:"
 echo "       ./check.sh \$YourFilePath"
 
 #date="--A1A2B1B2--"
-date="Trace"
+date="--Trace--"
 #date="0818test_th80mv"
 
 template=${date}00001.trc
@@ -53,14 +53,14 @@ then
 			if [ ! -e $name ]
 			then
 			echo $name
-			#cp ${path}/${dirname}/${ch}${template} $name
+			cp ${path}/${dirname}/${ch}${template} $name
                         else
                             filesize=$(stat -c "%s" $name)
                             if [ $filesize -ne $size ]
                             #if [ 0 -eq 1 ]
                             then
 			        echo $name
-        			#cp ${path}/${dirname}/${ch}${template} $name
+        			cp ${path}/${dirname}/${ch}${template} $name
                             fi
 
 			fi
@@ -89,14 +89,14 @@ else
 		if [ ! -e $name ]
 		then
 			echo $name
-			#cp ${path}/${ch}${template} $name
+			cp ${path}/${ch}${template} $name
                 else
                     filesize=$(stat -c "%s" $name)
                     if [ $filesize -ne $size ]
                     #if [ 0 -eq 1 ]
                     then
 		        echo $name
-			#cp ${path}/${ch}${template} $name
+			cp ${path}/${ch}${template} $name
                     fi
 
 		fi
