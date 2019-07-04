@@ -271,10 +271,10 @@ WaveformPoint Detector::FindTimingPoint(double fac,int partype)
     {
         if( waveform_y.at(i) - cf > 0 && waveform_y.at(i-1) - cf < 0 )
         {
-            double x1 = waveform_x.at(i-1);
-            double x2 = waveform_x.at(i);
-            double y1 = waveform_y.at(i-1);
-            double y2 = waveform_y.at(i);
+            //double x1 = waveform_x.at(i-1);
+            //double x2 = waveform_x.at(i);
+            //double y1 = waveform_y.at(i-1);
+            //double y2 = waveform_y.at(i);
             //naive_time = linear_interpolation(x1,x2,y1,y2,cf);
             thePoint.y = waveform_y.at(i);
             thePoint.position = i;
@@ -420,7 +420,8 @@ void Detector::TimeInformation(){
    for(int i=0;i<8;i++)
    {
 
-    CFD = Time(0.05*(i+1),0);
+    CFD = Time_linear(0.05*(i+1),0,7);
+    //CFD = Time(0.05*(i+1),0);
     CFDfrac[i]=0.05*(i+1);
     CFDtime[i]=CFD.x;
     CFDfailed[i]=CFD.failed;
@@ -428,8 +429,8 @@ void Detector::TimeInformation(){
 
    for(int i=0;i<14;i++)
    {
-       LED = Time(0.05+0.05*i,1);
-       LEDthrd[i]=0.05+0.05*i;
+       LED = Time(0.01+0.01*i,1);
+       LEDthrd[i]=0.01+0.01*i;
        LEDtime[i]=LED.x;
        LEDfailed[i]=LED.failed;
 
@@ -460,6 +461,99 @@ void Detector::TimeInformation(){
     */
 }
 
+TimingInfo Detector::Time_linear(double fac,int partype,int Npoint){
+
+    //if(type > 0) return;
+
+    //if type==0, the first parameter is a ratio of amplitude;
+    //if typer==1,the first parameter is a fixed threshold of amplitude;
+
+    TimingInfo Timing;
+    Timing.x = 0;
+    Timing.y = 0;
+    Timing.slope = 0;
+    Timing.intersect = 0;
+    Timing.timing = 0;
+    Timing.failed = 0;
+
+    double cf;
+    int Pointpos=0;
+
+    const int Fitpoint = Npoint;
+    double xArray[Fitpoint * 2];
+    double yArray[Fitpoint * 2];
+    double x1=0,x2=0,y1=0,y2=0;
+    if (partype==0){
+        cf = fac*global_maximum.y;}
+    else {
+        cf = fac;}
+
+    for(int i = global_maximum.position ; i > start_point.position && i>1; --i)
+    {
+        if( waveform_y.at(i) - cf > 0 && waveform_y.at(i-1) - cf < 0 )
+        {
+            Pointpos = i;
+            x1=waveform_x.at(i-1);
+            x2=waveform_x.at(i);
+            y1=waveform_y.at(i-1);
+            y2=waveform_y.at(i);
+
+            break;
+        }
+    }
+    for(int i = 0; i < Fitpoint * 2; i++)
+    {
+        xArray[i] = waveform_x.at(Pointpos-Fitpoint+i);
+        yArray[i] = waveform_y.at(Pointpos-Fitpoint+i);
+
+    }
+    /* std::cout<< "\nprogram check ========>>>"<<"\n"
+            << xArray[0]<<"\n"
+            << xArray[2* Fitpoint -1]<<"\n"
+            << std::endl;
+    */
+
+   int pWavenum = waveform_x.size();
+   auto xWave = new double[waveform_x.size()];
+   auto yWave = new double[waveform_x.size()];
+   for(int i = 0; i < waveform_x.size(); i ++)
+   {
+       xWave[i] = waveform_x[i];
+       yWave[i] = waveform_y[i];
+   }
+
+  TGraph* tgFit = new TGraph(2 * Fitpoint, xArray, yArray);
+  auto tgWave = new TGraph(pWavenum, xWave, yWave);
+  //TF1 *f = new TF1("f","pol1", xArray[0], xArray[2 * Fitpoint - 1]);
+  //tgFit->Fit(f,"RQ");
+  tgFit -> Fit("pol1", "RQ", "", xArray[0], xArray[2 * Fitpoint - 1]);
+  auto f = tgFit->GetFunction("pol1");
+            
+  Timing.x = f -> GetX(cf);
+  //std::cout<<Timing.x<<std::endl;
+  //Timing.x=(double)(x2-x1)/(y2-y1)*(cf-y1)+x1;
+  //std::cout<<Timing.x<<std::endl;
+
+  Timing.y = cf;
+  Timing.slope = f -> GetParameter(1);
+  Timing.intersect = f -> GetParameter(0);
+  Timing.timing = -TwentyPercent.intersect/TwentyPercent.slope;
+  Timing.failed = 0;
+
+    tgFit -> SetName("FitPoints");
+    tgFit->Write();
+    tgWave -> SetName("WaveForms");
+    tgWave -> Write();
+    delete tgFit;
+    delete tgWave;
+    delete []xWave;
+    delete []yWave;
+    return Timing;
+  
+
+}
+
+
 TimingInfo Detector::Time(double fac,int partype){
 
     //if(type > 0) return;
@@ -474,6 +568,9 @@ TimingInfo Detector::Time(double fac,int partype){
     Timing.intersect = 0;
     Timing.timing = 0;
     Timing.failed = 0;
+
+
+
     for(int i = 0; i < 4; ++i) Timing.parameters[i] = 0;
     bool use_filtered_waveform = 0;
     WaveformPoint Point = FindTimingPoint(fac,partype);

@@ -73,6 +73,7 @@ class Detector
     void TimeTwentyPercent();
     void TimeInformation();
     TimingInfo Time(double fac,int partype);
+    TimingInfo Time_linear(double fac,int partype,int Npoint);
     WaveformPoint FindTimingPoint(double fac,int partype);
     void TimeSigmoid();
     void FindRiseTime();
