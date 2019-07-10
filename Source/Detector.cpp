@@ -392,7 +392,57 @@ void Detector::TimeInflection()
     Inflection.timing = -Inflection.intersect/Inflection.slope;
     for(int i = 0; i < 4; ++i) Inflection.parameters[i] = par[i];
 }
-
+void Detector::LineFitLeastSquares(double *data_x, double *data_y, int data_n, std::vector<double> &vResult)
+{
+	double A = 0.0;
+	double B = 0.0;
+	double C = 0.0;
+	double D = 0.0;
+	double E = 0.0;
+	double F = 0.0;
+ 
+	for (int i=0; i<data_n; i++)
+	{
+		A += data_x[i] * data_x[i];
+		B += data_x[i];
+		C += data_x[i] * data_y[i];
+		D += data_y[i];
+	}
+ 
+	// 计算斜率a和截距b
+	double a, b, temp = 0;
+	if( temp = (data_n*A - B*B) )// 判断分母不为0
+	{
+		a = (data_n*C - B*D) / temp;
+		b = (A*D - B*C) / temp;
+	}
+	else
+	{
+		a = 1;
+		b = 0;
+	}
+ 
+	// 计算相关系数r
+	double Xmean, Ymean;
+	Xmean = B / data_n;
+	Ymean = D / data_n;
+ 
+	double tempSumXX = 0.0, tempSumYY = 0.0;
+	for (int i=0; i<data_n; i++)
+	{
+		tempSumXX += (data_x[i] - Xmean) * (data_x[i] - Xmean);
+		tempSumYY += (data_y[i] - Ymean) * (data_y[i] - Ymean);
+		E += (data_x[i] - Xmean) * (data_y[i] - Ymean);
+	}
+	F = sqrt(tempSumXX) * sqrt(tempSumYY);
+ 
+	double r;
+	r = E / F;
+ 
+	vResult.push_back(a);
+	vResult.push_back(b);
+	vResult.push_back(r*r);
+}
 bool Detector::FitPol3(double* x, double* y, double* fit_parameters)
 {
     TMatrixD X(4,4);
@@ -501,6 +551,8 @@ TimingInfo Detector::Time_linear(double fac,int partype,int Npoint){
             break;
         }
     }
+    while (Pointpos-Fitpoint < 0) Pointpos++;
+    while( Pointpos+Fitpoint >= waveform_y.size() ) Pointpos--;
     for(int i = 0; i < Fitpoint * 2; i++)
     {
         xArray[i] = waveform_x.at(Pointpos-Fitpoint+i);
@@ -512,11 +564,23 @@ TimingInfo Detector::Time_linear(double fac,int partype,int Npoint){
             << xArray[2* Fitpoint -1]<<"\n"
             << std::endl;
     */
+    std::vector<double> results;
+    LineFitLeastSquares(xArray, yArray, Fitpoint*2, results);
+    //Timing.x=(double)(x2-x1)/(y2-y1)*(cf-y1)+x1;
+    Timing.slope = results.at(0);
+    Timing.intersect = results.at(1);
+    Timing.y = cf;
+    if(Timing.slope!=0) Timing.x = (cf-Timing.intersect)/Timing.slope;
+    Timing.timing = -Timing.intersect/Timing.slope;
+    if(abs(results.at(2))>0.5) Timing.failed = 0;
+
+/* ====================check====================
+/*================================
 
    int pWavenum = waveform_x.size();
-   auto xWave = new double[waveform_x.size()];
-   auto yWave = new double[waveform_x.size()];
-   for(int i = 0; i < waveform_x.size(); i ++)
+   auto xWave = new double[pWavenum];
+   auto yWave = new double[pWavenum];
+   for(int i = 0; i < pWavenum; i ++)
    {
        xWave[i] = waveform_x[i];
        yWave[i] = waveform_y[i];
@@ -528,7 +592,13 @@ TimingInfo Detector::Time_linear(double fac,int partype,int Npoint){
   //tgFit->Fit(f,"RQ");
   tgFit -> Fit("pol1", "RQ", "", xArray[0], xArray[2 * Fitpoint - 1]);
   auto f = tgFit->GetFunction("pol1");
-            
+
+    
+
+  TF1 *f2 = new TF1("f2","[0]*x+[1]",xArray[0],xArray[2*Fitpoint-1]);
+  f2->SetParameters(Timing.slope,Timing.intersect);
+    
+
   Timing.x = f -> GetX(cf);
   //std::cout<<Timing.x<<std::endl;
   //Timing.x=(double)(x2-x1)/(y2-y1)*(cf-y1)+x1;
@@ -537,9 +607,11 @@ TimingInfo Detector::Time_linear(double fac,int partype,int Npoint){
   Timing.y = cf;
   Timing.slope = f -> GetParameter(1);
   Timing.intersect = f -> GetParameter(0);
-  Timing.timing = -TwentyPercent.intersect/TwentyPercent.slope;
+  Timing.timing = -Timing.intersect/Timing.slope;
   Timing.failed = 0;
 
+    f2->SetName("Fit2");
+    f2->Write();
     tgFit -> SetName("FitPoints");
     tgFit->Write();
     tgWave -> SetName("WaveForms");
@@ -548,6 +620,9 @@ TimingInfo Detector::Time_linear(double fac,int partype,int Npoint){
     delete tgWave;
     delete []xWave;
     delete []yWave;
+//*
+===================================================================*/
+
     return Timing;
   
 
@@ -627,7 +702,39 @@ TimingInfo Detector::Time(double fac,int partype){
     Timing.intersect = Timing.y - Timing.slope*Timing.x;
     Timing.timing = -Timing.intersect/Timing.slope;
     for(int i = 0; i < 4; ++i) Timing.parameters[i] = par[i];
+/* 
+    int pWavenum = waveform_x.size();
+   auto xWave = new double[pWavenum];
+   auto yWave = new double[pWavenum];
+   for(int i = 0; i < pWavenum; i ++)
+   {
+       xWave[i] = waveform_x[i];
+       yWave[i] = waveform_y[i];
+   }
 
+ double xpoint[5],ypoint[5];
+  for(int i = 0; i < 4; ++i)
+    {
+        xpoint[i]= xArray[i] + x_offset;
+        ypoint[i] = yArray[i]; 
+    }
+
+
+xpoint[4]=Timing.x;
+ypoint[4]=Timing.y;
+TGraph* tgFit = new TGraph(5, xpoint, ypoint);
+  auto tgWave = new TGraph(pWavenum, xWave, yWave);
+  
+    tgWave -> SetName("WaveForms");
+    tgFit -> SetName("FitPoints");
+    
+    tgFit->Write();
+    tgWave -> Write();
+    delete tgFit;
+    delete tgWave;
+    delete []xWave;
+    delete []yWave;
+*/
     return Timing;
 
 }

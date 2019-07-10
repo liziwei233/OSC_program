@@ -70,6 +70,7 @@ class Detector
     void FindMaxDerivative();
     void TimeInflection();
     bool FitPol3(double* x, double* y, double* fit_parameters);
+    void LineFitLeastSquares(double *data_x, double *data_y, int data_n, std::vector<double> &vResult);
     void TimeTwentyPercent();
     void TimeInformation();
     TimingInfo Time(double fac,int partype);

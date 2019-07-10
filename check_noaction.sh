@@ -4,7 +4,7 @@ echo "++Note:"
 echo "       ./check.sh \$YourFilePath"
 
 #date="--A1A2B1B2--"
-date="--Trace--"
+date="Trace"
 #date="0818test_th80mv"
 
 template=${date}00001.trc
