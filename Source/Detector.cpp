@@ -908,7 +908,17 @@ void Detector::FilterWaveformFFT(int start, int N, double biggest_frequency_not_
 void Detector::FindRiseTime()
 {
     double eightypercent_naive_time;
+    double twentypercent_naive_time;
+/* 
+    TimingInfo twentypercent = Time_linear(0.2,0,7);
+    TimingInfo eightypercent = Time_linear(0.8,0,7);
+    eightypercent_naive_time = eightypercent.x;
+    twentypercent_naive_time = twentypercent.x;
+    rise_time = eightypercent_naive_time - twentypercent_naive_time;
+*/
+ 
     double cf = 0.8*global_maximum.y;
+
     for(int i = global_maximum.position ; i >= start_point.position && i > 1; --i)
     {
         if( waveform_y.at(i) - cf > 0 && waveform_y.at(i-1) - cf < 0 )
@@ -922,6 +932,8 @@ void Detector::FindRiseTime()
         }
     }
     rise_time = eightypercent_naive_time - naive_time;
+
+    
 }
 
 void Detector::FindWidth()
