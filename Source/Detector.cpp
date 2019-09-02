@@ -46,8 +46,7 @@ void Detector::SubstractBaseline(int base_region_end)
     double baseline_sum=0;
     double baseline_square_sum=0;
     int base_region_start = base_region_end - 2000;
-    if (base_region_start < 0 ) base_region_start = 40;
-    if (base_region_start >= base_region_end) base_region_start = 0;
+    if (base_region_start <= 0 ) base_region_start = 5;
     for(int i = base_region_start; i < base_region_end; ++i)
     {
         double y = waveform_y.at(i);

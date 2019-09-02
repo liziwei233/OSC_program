@@ -35,12 +35,12 @@ then
 			if [ $Num -eq $flag ]
 			then
 				echo $pre
-				./analyze_testbeam $path/$name $nfile ../$pathname$name.root
+				./analyze_testbeam $path/$name $((nfile-1)) ../$pathname$name.root
 			else
 				for subname in `ls $path/$name`
 				do
 					nsubfile=$(ls -l $path/$name/$subname | grep "^-" | wc -l)
-					./analyze_testbeam $path/$name/$subname $nsubfile ../$name_$subname.root
+					./analyze_testbeam $path/$name/$subname $((nsubfile-1)) ../$name_$subname.root
 				done
 			fi
 		fi
@@ -52,6 +52,6 @@ else
 	#nfile=$(expr $(ls -l $path/${channel}* | grep "^-" | wc -l) - 1)
 	echo $nfile
 	echo $pre
-	./analyze_testbeam $path/ $nfile ../${pathname}.root
+	./analyze_testbeam $path/ $((nfile-1)) ../${pathname}.root
 fi
 

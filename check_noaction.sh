@@ -4,10 +4,10 @@ echo "++Note:"
 echo "       ./check.sh \$YourFilePath"
 
 #date="--A1A2B1B2--"
-date="Trace"
+date="--Trace--"
 #date="0818test_th80mv"
 
-template=${date}00001.trc
+template=${date}00003.trc
 channel=("C1" "C3" "C4")
 path=$1
 ch1a=$2

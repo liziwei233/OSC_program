@@ -4,22 +4,26 @@ echo "++Note:"
 echo "       ./check.sh \$YourFilePath"
 
 #date="--A1A2B1B2--"
+#date="--Trace--"
 date="Trace"
 #date="0818test_th80mv"
 
-template=${date}00001.trc
-channel=("C1" "C3" "C4")
+template=${date}00003.trc
+channel=("C1" "C2" "C3" "C4")
 path=$1
 ch1a=$2
 ch2a=$3
 ch3a=$4
+ch4a=$5
 ch1b=" "
 ch2b=" "
 ch3b=" "
+ch4b=" "
 ch1=${ch1a:-$ch1b}
 ch2=${ch2a:-$ch2b}
 ch3=${ch3a:-$ch3b}
-channel=($ch1 $ch2 $ch3)
+ch4=${ch4a:-$ch4b}
+channel=($ch1 $ch2 $ch3 $ch4)
 
 subdir_num=$(ls -l $path | grep "^d" | wc -l)
 flag=0
