@@ -59,6 +59,7 @@ class Detector
     void InvertY();
     void SubstractBaseline(int base_region_end);
     void FindGlobalMaximum(int start, int end);
+    void FindInvertMaximum(int start, int end);
     void FindStartPoint(int start);
     void FindEndPoint(int start);
     void FindElectronPeakEndPoint();
@@ -93,6 +94,7 @@ class Detector
     double baseline_rms;
 
     WaveformPoint global_maximum;
+    WaveformPoint invert_maximum;
     WaveformPoint start_point;
     WaveformPoint end_point;
     WaveformPoint e_peak_end;

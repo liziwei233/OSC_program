@@ -9,7 +9,7 @@ class TestBeamSetup : public DetectorSetup
     public:
         void TestBeamAnalysis();
         void SetWaveformToAverage(AverageTool &aver);
-        void Dump();
+        void Dump(int id);
         void init();
         void init_tree();
         void tree_add_tracks(int& NumberofTracks, Track& OneTrack);

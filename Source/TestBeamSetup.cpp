@@ -1,5 +1,8 @@
 #include "TestBeamSetup.h"
 #include <iostream>
+#include "TLine.h"
+#include "TVirtualPad.h"
+
 void TestBeamSetup::TestBeamAnalysis()
 {
     ScaleAndShiftTimes();
@@ -22,7 +25,16 @@ void TestBeamSetup::TestBeamAnalysis()
 
         baseline_region_end-=400;
         if(baseline_region_end < 0 )
+        {
+
             baseline_region_end=100.;
+            if(baseline_region_end > Detectors.at(i)->global_maximum.position )
+                {
+                    baseline_region_end=50.;
+                    if(baseline_region_end > Detectors.at(i)->global_maximum.position )
+                        baseline_region_end=25.;
+                }
+        }
 
         max_region_end = 2000+baseline_region_end;
 
@@ -32,6 +44,7 @@ void TestBeamSetup::TestBeamAnalysis()
         Detectors.at(i)->FindGlobalMaximum(baseline_region_end, max_region_end); 
         Detectors.at(i)->FindStartPoint(baseline_region_end);
         Detectors.at(i)->FindEndPoint(max_region_end);
+        Detectors.at(i)->FindInvertMaximum(baseline_region_end, Detectors.at(i)->global_maximum.position);
         Detectors.at(i)->FindElectronPeakEndPoint();
         Detectors.at(i)->CalculateCharges();
         Detectors.at(i)->FindNaiveTiming();
@@ -39,7 +52,7 @@ void TestBeamSetup::TestBeamAnalysis()
         Detectors.at(i)->FindFirstPeak();
         Detectors.at(i)->FindMaxDerivative();
 
-        if(Detectors.at(i)->type > 0)
+        if(Detectors.at(i)->type > 0) //for MM
         {
 
             Detectors.at(i)->TimeSigmoid();
@@ -55,15 +68,15 @@ void TestBeamSetup::TestBeamAnalysis()
             Detectors.at(i)->FindMaxDerivative();
             Detectors.at(i)->TimeSigmoid();
         }
-        Detectors.at(i)->TimeInflection();
-        Detectors.at(i)->TimeTwentyPercent();
+        //Detectors.at(i)->TimeInflection();
+        //Detectors.at(i)->TimeTwentyPercent();
         Detectors.at(i)->TimeInformation(); 
 
 
     }
 }
 
-void TestBeamSetup::Dump()
+void TestBeamSetup::Dump(int id)
     //void TestBeamSetup::Dump(int id)
 {
     TFile dumpfile("testbeam_dumpfile.root","update");
@@ -76,21 +89,52 @@ void TestBeamSetup::Dump()
     integer.Write("n");
 
     TGraph gr;
+    TGraph gMP; // main peak 
+    TGraph gCTP; //crosstalk peak
     for(int i = 0; i < Detectors.size() ; ++i)
     {
-        gr = TGraph(Detectors.at(i)->waveform_x.size(), &Detectors.at(i)->waveform_x[0], &Detectors.at(i)->waveform_y[0]);
         char str1[20];
-        sprintf(str1,"graph_%d",i);
-        //sprintf(str1,"graph_%d",i,id);
+        sprintf(str1,"CH%dgraph_%d",i,id);
+        gr = TGraph(Detectors.at(i)->waveform_x.size(), &Detectors.at(i)->waveform_x[0], &Detectors.at(i)->waveform_y[0]);
         gr.Write(str1);
+        
+        gMP.SetPoint( 0, Detectors.at(i)->global_maximum.x, Detectors.at(i)->global_maximum.y);
+        gCTP.SetPoint( 0, Detectors.at(i)->invert_maximum.x, Detectors.at(i)->invert_maximum.y);
+        //sprintf(str1,"graph_%d",i,id);
+        gMP.SetMarkerSize(2);
+        gMP.SetMarkerStyle(32);
+        gMP.SetMarkerColor(3);
+        gCTP.SetMarkerSize(2);
+        gCTP.SetMarkerStyle(46);
+        gCTP.SetMarkerColor(2);
+         
+
         if( Detectors.at(i)->pre_filter_backup ) 
         {
             gr = TGraph(Detectors.at(i)->pre_filter_backup->waveform_x.size(), &Detectors.at(i)->pre_filter_backup->waveform_x[0], &Detectors.at(i)->pre_filter_backup->waveform_y[0]);
-            sprintf(str1,"unfiltered_graph_%d_%d",i);
+            sprintf(str1,"unfiltered_graph_%d_%d",i,id);
             //sprintf(str1,"unfiltered_graph_%d_%d",i,id);
             gr.Write(str1);
         }
+        
+    gr.Draw("AL");
+    gMP.Draw("Psame");
+    gCTP.Draw("Psame");
+    TLine *linebl = new TLine( Detectors.at(i)->waveform_x[0], Detectors.at(i)->baseline_level, Detectors.at(i)->waveform_x.at(baseline_region_end), Detectors.at(i)->baseline_level);
+    linebl->SetLineColor(2);
+    linebl->SetLineWidth(2);
+    linebl->Draw();
+    TLine *lineQ = new TLine( Detectors.at(i)->start_point.x, Detectors.at(i)->global_maximum.y, Detectors.at(i)->end_point.x, Detectors.at(i)->global_maximum.y);
+    lineQ->SetLineColor(2);
+    lineQ->SetLineWidth(2);
+    lineQ->Draw();
+    char str2[20];
+    sprintf(str2,"CH%dC_%d",i,id);
+    gPad->Write(str2);
+         
+
     }
+
     //Detectors.at(0)->pre_filter_backup->Sigmoid.fit_func.Write("rawsigmoid");
     //newtree->Write();
     dumpfile.Close();
@@ -337,11 +381,20 @@ void TestBeamSetup::init_tree()
         leafname = varname + "/D";
         OutTree->Branch(varname.c_str(),&det->global_maximum.x,leafname.c_str());
 
-        /*
            varname = typestr + "start_x";
            leafname = varname + "/D";
            OutTree->Branch(varname.c_str(),&det->start_point.x,leafname.c_str());
+           varname = typestr + "end_x";
+           leafname = varname + "/D";
+           OutTree->Branch(varname.c_str(),&det->end_point.x,leafname.c_str());
+           varname = typestr + "invert_maximum_x";
+           leafname = varname + "/D";
+           OutTree->Branch(varname.c_str(),&det->invert_maximum.x,leafname.c_str());
+           varname = typestr + "invertmax_maximum_y";
+           leafname = varname + "/D";
+           OutTree->Branch(varname.c_str(),&det->invert_maximum.y,leafname.c_str());
 
+        /*
            varname = typestr + "e_peak_end_x";
            leafname = varname + "/D";
            OutTree->Branch(varname.c_str(),&det->e_peak_end.x,leafname.c_str());

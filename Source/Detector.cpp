@@ -45,8 +45,10 @@ void Detector::SubstractBaseline(int base_region_end)
     //Find baseline
     double baseline_sum=0;
     double baseline_square_sum=0;
+    double baseline_level = 0;
+    double baseline_rms = 0;
     int base_region_start = base_region_end - 2000;
-    if (base_region_start < 0 ) base_region_start = 40;
+    if (base_region_start <= 0 ) base_region_start = 1;
     if (base_region_start >= base_region_end) base_region_start = 0;
     for(int i = base_region_start; i < base_region_end; ++i)
     {
@@ -66,6 +68,7 @@ void Detector::SubstractBaseline(int base_region_end)
 void Detector::FindGlobalMaximum(int start, int end)
 {
     global_maximum.y=-111111;
+    global_maximum.x = 0;
     global_maximum.position=5;
 
     for(int i = start ; i <= end && i < waveform_y.size() ; i++)
@@ -78,6 +81,31 @@ void Detector::FindGlobalMaximum(int start, int end)
     }
     global_maximum.x = waveform_x.at(global_maximum.position);
 }
+
+void Detector::FindInvertMaximum(int start, int end)
+{
+    invert_maximum.y=111111;
+    invert_maximum.x=0;
+    invert_maximum.position=5;
+    //if( start<3) start =3;
+
+    for(int i = start ; i <= end && i < waveform_y.size() ; i++)
+    { 
+        if( waveform_y.at(i) < invert_maximum.y )
+        {
+            invert_maximum.y = waveform_y.at(i);
+            invert_maximum.position = i;
+        }
+        /*
+        if(waveform_y.at(i)-waveform_y.at(i-2)<0&&waveform_y.at(i)-waveform_y.at(i-1)<0&&waveform_y.at(i)-waveform_y.at(i+1)<0&&waveform_y.at(i)-waveform_y.at(i+2)<0)
+        invert_maximum.y = waveform_y.at(i);
+        invert_maximum.position = i;
+         */
+       
+    }
+    invert_maximum.x = waveform_x.at(invert_maximum.position);
+}
+
 
 void Detector::FindStartPoint(int start)
 {
@@ -199,6 +227,8 @@ void Detector::CalculateCharges()
     double leftpos=0;
     double rightpos=0;
 
+    memset(charge_all,0,sizeof(charge_all));
+    
     charge_leading_edge=0;
     for(int i = start_point.position; i <= global_maximum.position; ++i)
         charge_leading_edge += waveform_y.at(i);
@@ -210,18 +240,20 @@ void Detector::CalculateCharges()
     charge_e_peak *= conversion;
 
     //charge_all=0;
-    memset(charge_all,0,sizeof(charge_all));
     //
-    //* charge1 --dynamic range
+    //* charge0 --dynamic range
     for(int i = start_point.position; i <= end_point.position; ++i)
         charge_all[0] += waveform_y.at(i);
     charge_all[0] *= conversion;
     //
-    //* charge1 --10ns range
+    //* charge1 --dynamic range with fixed start pos
     //leftpos=global_maximum.position-4000/25;
     //rightpos=global_maximum.position+6000/25;
-    leftpos=waveform_y.size()/2-4/step;
-    rightpos=waveform_y.size()/2+6/step;
+    //leftpos=waveform_y.size()/2-4/step;
+    //rightpos=waveform_y.size()/2+6/step;
+    leftpos=10/step;
+    //rightpos=70/step;
+    rightpos=end_point.position;
     //std::cout<<step<<std::endl;
     //std::cout<<waveform_y.size()/2<<std::endl;
     //std::cout<<leftpos<<std::endl;
@@ -232,18 +264,24 @@ void Detector::CalculateCharges()
         charge_all[1] += waveform_y.at(i);
     charge_all[1] *= conversion;
     //
-    //* charge1 --30ns range
-    leftpos=waveform_y.size()/2-12/step;
-    rightpos=waveform_y.size()/2+18/step;
+    //* charge2 --fixed 5ns range
+    leftpos=10/step;
+    //rightpos=70/step;
+    rightpos=15/step;
+    //leftpos=waveform_y.size()/2-12/step;
+    //rightpos=waveform_y.size()/2+18/step;
     if(leftpos<1) leftpos=1;
     if(rightpos>=waveform_y.size()) rightpos=waveform_y.size()-1;
     for(int i = leftpos; i <= rightpos; ++i)
         charge_all[2] += waveform_y.at(i);
     charge_all[2] *= conversion;
     //
-    //* charge1 --50ns range
-    leftpos=waveform_y.size()/2-20/step;
-    rightpos=waveform_y.size()/2+30/step;
+    //* charge3 --fixed 10ns range
+    //leftpos=waveform_y.size()/2-20/step;
+    //rightpos=waveform_y.size()/2+30/step;
+    leftpos=10/step;
+    //rightpos=70/step;
+    rightpos=20/step;
     if(leftpos<1) leftpos=1;
     if(rightpos>=waveform_y.size()) rightpos=waveform_y.size()-1;
     for(int i = leftpos; i <= rightpos; ++i)
