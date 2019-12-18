@@ -45,8 +45,8 @@ void Detector::SubstractBaseline(int base_region_end)
     //Find baseline
     double baseline_sum=0;
     double baseline_square_sum=0;
-    double baseline_level = 0;
-    double baseline_rms = 0;
+    baseline_level = 0;
+    baseline_rms = 0;
     int base_region_start = base_region_end - 2000;
     if (base_region_start <= 0 ) base_region_start = 1;
     if (base_region_start >= base_region_end) base_region_start = 0;
@@ -228,7 +228,7 @@ void Detector::CalculateCharges()
     double rightpos=0;
 
     memset(charge_all,0,sizeof(charge_all));
-    
+
     charge_leading_edge=0;
     for(int i = start_point.position; i <= global_maximum.position; ++i)
         charge_leading_edge += waveform_y.at(i);
@@ -241,19 +241,19 @@ void Detector::CalculateCharges()
 
     //charge_all=0;
     //
-    //* charge0 --dynamic range
+    //* charge0 --dynamic range 
     for(int i = start_point.position; i <= end_point.position; ++i)
         charge_all[0] += waveform_y.at(i);
     charge_all[0] *= conversion;
     //
-    //* charge1 --dynamic range with fixed start pos
-    //leftpos=global_maximum.position-4000/25;
-    //rightpos=global_maximum.position+6000/25;
+    //* charge1 --fixed range 5ns
+    leftpos=global_maximum.position-2/step;
+    rightpos=global_maximum.position+3/step;
     //leftpos=waveform_y.size()/2-4/step;
     //rightpos=waveform_y.size()/2+6/step;
-    leftpos=10/step;
+    //leftpos=10/step;
     //rightpos=70/step;
-    rightpos=end_point.position;
+    //rightpos=end_point.position;
     //std::cout<<step<<std::endl;
     //std::cout<<waveform_y.size()/2<<std::endl;
     //std::cout<<leftpos<<std::endl;
@@ -264,10 +264,10 @@ void Detector::CalculateCharges()
         charge_all[1] += waveform_y.at(i);
     charge_all[1] *= conversion;
     //
-    //* charge2 --fixed 5ns range
-    leftpos=10/step;
+    //* charge2 --fixed 10ns range
+    leftpos=global_maximum.position-4/step;
     //rightpos=70/step;
-    rightpos=15/step;
+    rightpos=global_maximum.position+6/step;
     //leftpos=waveform_y.size()/2-12/step;
     //rightpos=waveform_y.size()/2+18/step;
     if(leftpos<1) leftpos=1;
@@ -276,12 +276,12 @@ void Detector::CalculateCharges()
         charge_all[2] += waveform_y.at(i);
     charge_all[2] *= conversion;
     //
-    //* charge3 --fixed 10ns range
-    //leftpos=waveform_y.size()/2-20/step;
-    //rightpos=waveform_y.size()/2+30/step;
-    leftpos=10/step;
+    //* charge3 --fixed 20ns range
+    leftpos=global_maximum.position-8/step;
+    rightpos=global_maximum.position-12/step;
+    //leftpos=10/step;
     //rightpos=70/step;
-    rightpos=20/step;
+   // rightpos=20/step;
     if(leftpos<1) leftpos=1;
     if(rightpos>=waveform_y.size()) rightpos=waveform_y.size()-1;
     for(int i = leftpos; i <= rightpos; ++i)

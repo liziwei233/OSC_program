@@ -35,7 +35,7 @@ void TestBeamSetup::TestBeamAnalysis()
                         baseline_region_end=25.;
                 }
         }
-
+        record_blregion_end[i] = baseline_region_end;
         max_region_end = 2000+baseline_region_end;
 
 
@@ -120,7 +120,7 @@ void TestBeamSetup::Dump(int id)
     gr.Draw("AL");
     gMP.Draw("Psame");
     gCTP.Draw("Psame");
-    TLine *linebl = new TLine( Detectors.at(i)->waveform_x[0], Detectors.at(i)->baseline_level, Detectors.at(i)->waveform_x.at(baseline_region_end), Detectors.at(i)->baseline_level);
+    TLine *linebl = new TLine( Detectors.at(i)->waveform_x[0], 0, Detectors.at(i)->waveform_x.at(record_blregion_end[i]), 0);
     linebl->SetLineColor(2);
     linebl->SetLineWidth(2);
     linebl->Draw();
@@ -390,7 +390,7 @@ void TestBeamSetup::init_tree()
            varname = typestr + "invert_maximum_x";
            leafname = varname + "/D";
            OutTree->Branch(varname.c_str(),&det->invert_maximum.x,leafname.c_str());
-           varname = typestr + "invertmax_maximum_y";
+           varname = typestr + "invert_maximum_y";
            leafname = varname + "/D";
            OutTree->Branch(varname.c_str(),&det->invert_maximum.y,leafname.c_str());
 

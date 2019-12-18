@@ -14,5 +14,7 @@ class TestBeamSetup : public DetectorSetup
         void init_tree();
         void tree_add_tracks(int& NumberofTracks, Track& OneTrack);
         void init(int& NumberofTracks, Track& OneTrack);
+    protected:
+        int record_blregion_end[10];
 };
 #endif
