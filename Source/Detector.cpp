@@ -278,7 +278,7 @@ void Detector::CalculateCharges()
     //
     //* charge3 --fixed 20ns range
     leftpos=global_maximum.position-8/step;
-    rightpos=global_maximum.position-12/step;
+    rightpos=global_maximum.position+12/step;
     //leftpos=10/step;
     //rightpos=70/step;
    // rightpos=20/step;
