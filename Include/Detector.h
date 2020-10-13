@@ -27,6 +27,7 @@ struct TimingInfo
     double timing;
     double parameters[4];//pol3 parameters
     bool failed = 0;
+    double r;
 };
 
 
@@ -55,11 +56,15 @@ class Detector
     void SetWaveY(std::vector<double> wave);
     void SetWaveX(std::vector<double> wave);
     void SetMCP();
+    void SetTR();
     void SetMM();
     void InvertY();
     void SubstractBaseline(int base_region_end);
     void FindGlobalMaximum(int start, int end);
+    void FindFirstPeak(int start, int end);
+    void ConvertFirstPeak2GlobalMaximum();
     void FindInvertMaximum(int start, int end);
+    void FindSecondInvertPeak(int start);
     void FindStartPoint(int start);
     void FindEndPoint(int start);
     void FindElectronPeakEndPoint();
@@ -73,7 +78,7 @@ class Detector
     bool FitPol3(double* x, double* y, double* fit_parameters);
     void LineFitLeastSquares(double *data_x, double *data_y, int data_n, std::vector<double> &vResult);
     void TimeTwentyPercent();
-    void TimeInformation();
+    void TimeInformation(int Dtype, int fittype, int npoint);
     TimingInfo Time(double fac,int partype);
     TimingInfo Time_linear(double fac,int partype,int Npoint);
     WaveformPoint FindTimingPoint(double fac,int partype);
@@ -94,7 +99,9 @@ class Detector
     double baseline_rms;
 
     WaveformPoint global_maximum;
+    WaveformPoint firstpeak;
     WaveformPoint invert_maximum;
+    WaveformPoint SecondInvertPeak;
     WaveformPoint start_point;
     WaveformPoint end_point;
     WaveformPoint e_peak_end;
@@ -107,46 +114,27 @@ class Detector
     double charge_all[4];
 
     double naive_time;//ns
-    double rise_time;// defined from 20% to 80% height of the pulse
+    double rise_time[4];// 1,2 defined from 10-90% height of the pulse; 3,4 defined from 20-80%.
     double width;
 
     TimingInfo Inflection;
     TimingInfo TwentyPercent;
     SigmoidInfo Sigmoid;
     
+    TimingInfo CFD;
     double CFDtime[8];
     double CFDfrac[8];
     bool CFDfailed[8];
+    double CFDr[8];
 
+/*
     double LEDtime[14];
     double LEDthrd[14];
     bool LEDfailed[14];
-
-    TimingInfo CFD;
+    double LEDr[14];
     TimingInfo LED;
-    TimingInfo Lead_percent_5;
-    TimingInfo Lead_percent_10;
-    TimingInfo Lead_percent_15;
-    TimingInfo Lead_percent_20;
-    TimingInfo Lead_percent_25;
-    TimingInfo Lead_percent_30;
-    TimingInfo Lead_percent_35;
-    TimingInfo Lead_percent_40;
+*/
 
-    TimingInfo Lead_thrd_30;
-    TimingInfo Lead_thrd_50;
-    TimingInfo Lead_thrd_70;
-    TimingInfo Lead_thrd_90;
-    TimingInfo Lead_thrd_110;
-    TimingInfo Lead_thrd_130;
-    TimingInfo Lead_thrd_150;
-    TimingInfo Lead_thrd_170;
-    TimingInfo Lead_thrd_190;
-    TimingInfo Lead_thrd_210;
-    TimingInfo Lead_thrd_230;
-    TimingInfo Lead_thrd_250;
-    TimingInfo Lead_thrd_300;
-    TimingInfo Lead_thrd_400;
 };
 
 double fermi_dirac(double *x, double *par);

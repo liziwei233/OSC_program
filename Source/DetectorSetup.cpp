@@ -12,7 +12,12 @@ void DetectorSetup::CreateMCP()
     MCP->SetMCP();
     Detectors.push_back(MCP);
 }
-
+void DetectorSetup::CreateTR()
+{
+    Detector* TR = new Detector();
+    TR->SetTR();
+    Detectors.push_back(TR);
+}
 void DetectorSetup::CreateMM()
 {
     Detector* MM = new Detector();
