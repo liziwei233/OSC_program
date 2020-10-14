@@ -233,7 +233,7 @@ void TestBeamSetup::Dump(int id)
 //    //aver.SetWaveform(Detectors.at(j)->waveform_x, Detectors.at(j)->waveform_y, ref_time, normalization, baseline_region_end);
 //}
 
-void TestBeamSetup::SetWaveformToAverage(AverageTool &aver)
+void TestBeamSetup::SetWaveformToAverage(AverageTool &aver,int theID)
 {
     ScaleAndShiftTimes();
     for(int i = 0; i < NofDetectors; ++i)
@@ -252,7 +252,7 @@ void TestBeamSetup::SetWaveformToAverage(AverageTool &aver)
     max_region_end = 2000+baseline_region_end;
     //===
     //
-    int j = 0;
+    int j = theID;
     double ref_time=0;
     double n = 0;
     for(int i = 0; i < NofDetectors; ++i)
@@ -265,6 +265,7 @@ void TestBeamSetup::SetWaveformToAverage(AverageTool &aver)
         }
         else
         {
+            if(i==theID){
 
             Detectors.at(i)->FindStartPoint(baseline_region_end);
             Detectors.at(i)->FindEndPoint(max_region_end);
@@ -278,12 +279,12 @@ void TestBeamSetup::SetWaveformToAverage(AverageTool &aver)
             Detectors.at(i)->TimeTwentyPercent();
             Detectors.at(i)->TimeInflection();
             //ref_time += Detectors.at(i)->Inflection.timing;
-            ref_time += Detectors.at(i)->TwentyPercent.x;
-            n++;
+            ref_time = Detectors.at(i)->TwentyPercent.x;
+            }
         }
     }
 
-    ref_time/= n; 
+    //ref_time/= n; 
     if(ref_time > 1.e+40)
         ref_time = 15.;
 
@@ -532,4 +533,6 @@ void TestBeamSetup::init_tree()
         std::cout << typestr << std::endl;
     }
 }
+
+
 

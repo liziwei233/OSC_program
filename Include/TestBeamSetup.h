@@ -8,7 +8,7 @@ class TestBeamSetup : public DetectorSetup
 {
     public:
         void TestBeamAnalysis();
-        void SetWaveformToAverage(AverageTool &aver);
+        void SetWaveformToAverage(AverageTool &aver,int theID);
         void Dump(int id);
         void init(std::vector<int> channel_ids);
         void init_tree();

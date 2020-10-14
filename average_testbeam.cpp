@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
 
         i++;
         printf("\rEvent is: %.5d ===============================================",i-1);//magic 
-        mysetup.SetWaveformToAverage(aver);
+        mysetup.SetWaveformToAverage(aver,2);
 
         aver.StandardAverage();
         //mysetup.AverageAnalysis();
