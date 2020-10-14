@@ -37,10 +37,14 @@ int main(int argc, char *argv[])
     }
     //Specify the channels written in the files
     std::vector<int> channel_IDs;
-    //channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
+    TestBeamSetup mysetup;
+    channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
+    mysetup.CreateTR();
     channel_IDs.push_back(2); //<- Channel 1 (mcp1)
-    channel_IDs.push_back(3); //<- Channel 2 (mcp2)
+    //channel_IDs.push_back(3); //<- Channel 2 (mcp2)
     channel_IDs.push_back(4); //<- Channel 2 (mcp2)
+    mysetup.CreateMCP();
+    mysetup.CreateMCP();
                               //   TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--trace--");
     //TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--A1A2B1B2--",0);
     //    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "0818test_th30mv",0);
@@ -48,11 +52,7 @@ int main(int argc, char *argv[])
     TRC_FileReader myfile(channel_IDs, argv[1], atoi(argv[2]), "--Trace--", file_id);
     //    myfile.OpenTriggerChannel(argv[1],atoi(argv[2]),"--trace--",4);
 
-    TestBeamSetup mysetup;
 
-    mysetup.CreateMCP();
-    mysetup.CreateMCP();
-    mysetup.CreateMCP();
     //mysetup.CreateMCP();
     //    mysetup.CreateMCP();
     //    mysetup.CreateMCP();
@@ -66,11 +66,11 @@ int main(int argc, char *argv[])
     if (atoi(argv[5]) != 0)
     {
         Tracker = new TrackInfo(argv[6]);
-        mysetup.init(NumberofTracks, OneTrack);
+        mysetup.init(channel_IDs,NumberofTracks, OneTrack);
     }
     }
     else
-        mysetup.init();
+        mysetup.init(channel_IDs);
 
     myfile.SetDetectorSetup(mysetup);
 

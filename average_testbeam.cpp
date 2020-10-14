@@ -21,6 +21,7 @@ int main(int argc, char* argv[])
     AverageTool aver(16384);
     
     int enable_dumping = 0;
+    int file_id = 0;
     if(argc > 4)
     {
         if(atoi(argv[4]) == 1)
@@ -36,19 +37,26 @@ int main(int argc, char* argv[])
 
     //FileReader myfile(argv[1]);
     std::vector<int> channel_IDs;
-    channel_IDs.push_back(2); //<- Channel 4 (Picosecond Micromegas)
-    channel_IDs.push_back(1); //<- Channel 1 (MCP)
+    //channel_IDs.push_back(2); //<- Channel 4 (Picosecond Micromegas)
+    //channel_IDs.push_back(1); //<- Channel 1 (MCP)
     //channel_IDs.push_back(2); //<- Channel 2 (MCP)
-    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]),"Trace");
-
+    //TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]),"Trace");
+    TRC_FileReader myfile(channel_IDs, argv[1], atoi(argv[2]), "--Trace--", file_id);
     TestBeamSetup mysetup;
-    mysetup.CreateMM();
-    mysetup.CreateMCP();
+    //mysetup.CreateMM();
+    //mysetup.CreateMCP();
     //mysetup.CreateMCP();
     //mysetup.CreateMM();
+    channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
+    mysetup.CreateTR();
+    channel_IDs.push_back(2); //<- Channel 1 (mcp1)
+    //channel_IDs.push_back(3); //<- Channel 2 (mcp2)
+    channel_IDs.push_back(4); //<- Channel 2 (mcp2)
+    mysetup.CreateMCP();
+    mysetup.CreateMCP();
 
     //mysetup.init(NumberofTracks, OneTrack);
-    mysetup.init();
+    mysetup.init(channel_IDs);
     myfile.SetDetectorSetup(mysetup);
 
     int dumping_id = 0;
@@ -60,7 +68,7 @@ int main(int argc, char* argv[])
 
         i++;
         printf("\rEvent is: %.5d ===============================================",i-1);//magic 
-        mysetup.SetWaveformToAverage(aver);
+        mysetup.SetWaveformToAverage(aver,2);
 
         aver.StandardAverage();
         //mysetup.AverageAnalysis();
@@ -70,13 +78,16 @@ int main(int argc, char* argv[])
         //if(i-1==dumping_id) // Specify Event to be dumped to dumpfile.root (read by executing ` root -l draw_dump.C `)
         //    mysetup.Dump();
 
-        if(dumping_id >=0 && enable_dumping) 
+        if(i - 1 == dumping_id && enable_dumping) 
+                mysetup.Dump(dumping_id);
+                /*
             if(dumping_id<=i-1)
             {
                 printf("\nNext event to dump: (give negative to stop dumping)");
                 int ok = scanf("%d",&dumping_id);
                 if(dumping_id < 0) break;
             }
+            */
 
         //mysetup.Fill_Tree();
         //if(i==1) break;

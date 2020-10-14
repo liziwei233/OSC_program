@@ -20,6 +20,7 @@ class DetectorSetup
     public:
         ~DetectorSetup();
         void CreateMCP();
+        void CreateTR();
         void CreateMM();
         void SetDetectorWaveform(int i, std::vector<double> x, std::vector<double> y);
         void SetTriggerNumber(int TrigNum);

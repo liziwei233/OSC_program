@@ -41,17 +41,29 @@ void TestBeamSetup::TestBeamAnalysis()
 
         Detectors.at(i)->SubstractBaseline(baseline_region_end);
 
-        Detectors.at(i)->FindGlobalMaximum(baseline_region_end, max_region_end); 
+        //Detectors.at(i)->FindGlobalMaximum(baseline_region_end, max_region_end); 
+        Detectors.at(i)->FindFirstPeak(baseline_region_end, max_region_end);
+        Detectors.at(i)->ConvertFirstPeak2GlobalMaximum();
         Detectors.at(i)->FindStartPoint(baseline_region_end);
         Detectors.at(i)->FindEndPoint(max_region_end);
-        Detectors.at(i)->FindInvertMaximum(baseline_region_end, Detectors.at(i)->global_maximum.position+200);
-        Detectors.at(i)->FindElectronPeakEndPoint();
         Detectors.at(i)->CalculateCharges();
-        Detectors.at(i)->FindNaiveTiming();
         Detectors.at(i)->FindRiseTime();
-        Detectors.at(i)->FindFirstPeak();
-        Detectors.at(i)->FindMaxDerivative();
+        Detectors.at(i)->FindWidth();
+        Detectors.at(i)->FindInvertMaximum(baseline_region_end, Detectors.at(i)->global_maximum.position);
+        Detectors.at(i)->FindSecondInvertPeak(Detectors.at(i)->global_maximum.position);
+        //Detectors.at(i)->FindElectronPeakEndPoint();
+       // Detectors.at(i)->FindNaiveTiming();
+        //Detectors.at(i)->FindFirstPeak();
+        //Detectors.at(i)->FindMaxDerivative();
 
+        
+        if(Detectors.at(i)->type == 0)
+           Detectors.at(i)->TimeInformation(0,1,7); 
+       else
+       {
+        Detectors.at(i)->TimeInformation(0,0,1); 
+       }
+       
         if(Detectors.at(i)->type > 0) //for MM
         {
 
@@ -64,13 +76,12 @@ void TestBeamSetup::TestBeamAnalysis()
             Detectors.at(i)->CalculateCharges();
             Detectors.at(i)->FindNaiveTiming();
             Detectors.at(i)->FindRiseTime();
-            Detectors.at(i)->FindFirstPeak();
+            //Detectors.at(i)->FindFirstPeak();
             Detectors.at(i)->FindMaxDerivative();
             Detectors.at(i)->TimeSigmoid();
         }
         //Detectors.at(i)->TimeInflection();
         //Detectors.at(i)->TimeTwentyPercent();
-        Detectors.at(i)->TimeInformation(); 
 
 
     }
@@ -91,15 +102,17 @@ void TestBeamSetup::Dump(int id)
     TGraph gr;
     TGraph gMP; // main peak 
     TGraph gCTP; //crosstalk peak
+    TGraph gRP; // ringing peak
     for(int i = 0; i < Detectors.size() ; ++i)
     {
         char str1[20];
-        sprintf(str1,"CH%dgraph_%d",i,id);
+        sprintf(str1,"CH%dgraph_%d",Channel_IDs.at(i),id);
         gr = TGraph(Detectors.at(i)->waveform_x.size(), &Detectors.at(i)->waveform_x[0], &Detectors.at(i)->waveform_y[0]);
         gr.Write(str1);
         
         gMP.SetPoint( 0, Detectors.at(i)->global_maximum.x, Detectors.at(i)->global_maximum.y);
         gCTP.SetPoint( 0, Detectors.at(i)->invert_maximum.x, Detectors.at(i)->invert_maximum.y);
+        gRP.SetPoint(0, Detectors.at(i)->SecondInvertPeak.x, Detectors.at(i)->SecondInvertPeak.y);
         //sprintf(str1,"graph_%d",i,id);
         gMP.SetMarkerSize(2);
         gMP.SetMarkerStyle(32);
@@ -107,6 +120,9 @@ void TestBeamSetup::Dump(int id)
         gCTP.SetMarkerSize(2);
         gCTP.SetMarkerStyle(46);
         gCTP.SetMarkerColor(2);
+        gRP.SetMarkerSize(2);
+        gRP.SetMarkerStyle(41);
+        gRP.SetMarkerColor(2);
          
 
         if( Detectors.at(i)->pre_filter_backup ) 
@@ -120,6 +136,7 @@ void TestBeamSetup::Dump(int id)
     gr.Draw("AL");
     gMP.Draw("Psame");
     gCTP.Draw("Psame");
+    gRP.Draw("Psame");
     TLine *linebl = new TLine( Detectors.at(i)->waveform_x[0], 0, Detectors.at(i)->waveform_x.at(record_blregion_end[i]), 0);
     linebl->SetLineColor(2);
     linebl->SetLineWidth(2);
@@ -129,7 +146,7 @@ void TestBeamSetup::Dump(int id)
     lineQ->SetLineWidth(2);
     lineQ->Draw();
     char str2[20];
-    sprintf(str2,"CH%dC_%d",i,id);
+    sprintf(str2,"CH%dC_%d",Channel_IDs.at(i),id);
     gPad->Write(str2);
          
 
@@ -216,7 +233,7 @@ void TestBeamSetup::Dump(int id)
 //    //aver.SetWaveform(Detectors.at(j)->waveform_x, Detectors.at(j)->waveform_y, ref_time, normalization, baseline_region_end);
 //}
 
-void TestBeamSetup::SetWaveformToAverage(AverageTool &aver)
+void TestBeamSetup::SetWaveformToAverage(AverageTool &aver,int theID)
 {
     ScaleAndShiftTimes();
     for(int i = 0; i < NofDetectors; ++i)
@@ -235,7 +252,7 @@ void TestBeamSetup::SetWaveformToAverage(AverageTool &aver)
     max_region_end = 2000+baseline_region_end;
     //===
     //
-    int j = 0;
+    int j = theID;
     double ref_time=0;
     double n = 0;
     for(int i = 0; i < NofDetectors; ++i)
@@ -248,6 +265,7 @@ void TestBeamSetup::SetWaveformToAverage(AverageTool &aver)
         }
         else
         {
+            if(i==theID){
 
             Detectors.at(i)->FindStartPoint(baseline_region_end);
             Detectors.at(i)->FindEndPoint(max_region_end);
@@ -255,18 +273,18 @@ void TestBeamSetup::SetWaveformToAverage(AverageTool &aver)
             Detectors.at(i)->CalculateCharges();
             Detectors.at(i)->FindNaiveTiming();
             Detectors.at(i)->FindRiseTime();
-            Detectors.at(i)->FindFirstPeak();
+            //Detectors.at(i)->FindFirstPeak();
             Detectors.at(i)->FindMaxDerivative();
 
             Detectors.at(i)->TimeTwentyPercent();
             Detectors.at(i)->TimeInflection();
             //ref_time += Detectors.at(i)->Inflection.timing;
-            ref_time += Detectors.at(i)->TwentyPercent.x;
-            n++;
+            ref_time = Detectors.at(i)->TwentyPercent.x;
+            }
         }
     }
 
-    ref_time/= n; 
+    //ref_time/= n; 
     if(ref_time > 1.e+40)
         ref_time = 15.;
 
@@ -282,8 +300,9 @@ void TestBeamSetup::SetWaveformToAverage(AverageTool &aver)
 
 }
 
-void TestBeamSetup::init()
+void TestBeamSetup::init(std::vector<int> channel_ids)
 {
+    Channel_IDs = channel_ids;
     NofDetectors=Detectors.size();
     //max_region_end = 20001;
     init_tree();
@@ -300,9 +319,9 @@ void TestBeamSetup::tree_add_tracks(int& NumberofTracks, Track& OneTrack)
     OutTree->Branch("SlopeYZ",&OneTrack.SlopeYZ,"SlopeYZ/D");
 }
 
-void TestBeamSetup::init(int& NumberofTracks, Track& OneTrack)
+void TestBeamSetup::init(std::vector<int> channel_ids,int& NumberofTracks, Track& OneTrack)
 {
-    init();
+    init(channel_ids);
     tree_add_tracks(NumberofTracks, OneTrack);
 }
 
@@ -310,6 +329,7 @@ void TestBeamSetup::init_tree()
 {
     //OutFile = new TFile("outrootfile.root","recreate");
     OutTree = new TTree("Pico","Analysis Output");
+    int tr_no = 0;
     int mcp_no = 0;
     int mm_no = 0;
     int filter = 0;
@@ -322,14 +342,25 @@ void TestBeamSetup::init_tree()
         std::string typestr;
         if(type > 0)
         {
-            mm_no++;
+            
+            
+                mm_no++;
             char str[20];
             sprintf(str,"MM%d_",mm_no);
             typestr = str;
+            
         }
-        else
+
+        if(type==0)
+            {
+                tr_no = Channel_IDs.at(i);
+            char str[20];
+            sprintf(str,"TR%d_",tr_no);
+            typestr = str;
+            }
+        if (type<0)
         {
-            mcp_no++;
+            mcp_no = Channel_IDs.at(i);
             char str[20];
             sprintf(str,"MCP%d_",mcp_no);
             typestr = str;
@@ -394,6 +425,14 @@ void TestBeamSetup::init_tree()
            leafname = varname + "/D";
            OutTree->Branch(varname.c_str(),&det->invert_maximum.y,leafname.c_str());
 
+           varname = typestr + "secondinvertpeak_x";
+        leafname = varname + "/D";
+        OutTree->Branch(varname.c_str(), &det->SecondInvertPeak.x, leafname.c_str());
+
+        varname = typestr + "secondinvertpeak_y";
+        leafname = varname + "/D";
+        OutTree->Branch(varname.c_str(), &det->SecondInvertPeak.y, leafname.c_str());
+
         /*
            varname = typestr + "e_peak_end_x";
            leafname = varname + "/D";
@@ -422,22 +461,31 @@ void TestBeamSetup::init_tree()
         OutTree->Branch(varname.c_str(),det->charge_all,leafname.c_str());
 
         varname = typestr + "rise_time";
-        leafname = varname + "/D";
+        leafname = varname + "[4]/D";
         OutTree->Branch(varname.c_str(),&det->rise_time,leafname.c_str());
+
+        varname = typestr + "width";
+        leafname = varname + "/D";
+        OutTree->Branch(varname.c_str(), &det->width, leafname.c_str());
 
         varname = typestr + "CFDtime";
         leafname = varname + "[8]/D";
-        if(is_filter || type < 0)
+        if(is_filter || type <= 0)
             OutTree->Branch(varname.c_str(),det->CFDtime,leafname.c_str());
         varname = typestr + "CFDfrac";
         leafname = varname + "[8]/D";
-        if(is_filter || type < 0)
+        if(is_filter || type <= 0)
             OutTree->Branch(varname.c_str(),det->CFDfrac,leafname.c_str());
+        varname = typestr + "CFDr";
+        leafname = varname + "[8]/D";
+        if(is_filter || type <= 0)
+            OutTree->Branch(varname.c_str(),det->CFDr,leafname.c_str());
         varname = typestr + "CFDfailed";
         leafname = varname + "[8]/O";
-        if(is_filter || type < 0)
+        if(is_filter || type <= 0)
             OutTree->Branch(varname.c_str(),det->CFDfailed,leafname.c_str());
         
+        /*
         varname = typestr + "LEDtime";
         leafname = varname + "[14]/D";
         if(is_filter || type < 0)
@@ -446,186 +494,14 @@ void TestBeamSetup::init_tree()
         leafname = varname + "[14]/D";
         if(is_filter || type < 0)
             OutTree->Branch(varname.c_str(),det->LEDthrd,leafname.c_str());
+        varname = typestr + "LEDr";
+        leafname = varname + "[14]/D";
+        if(is_filter || type < 0)
+            OutTree->Branch(varname.c_str(),det->LEDr,leafname.c_str());
         varname = typestr + "LEDfailed";
         leafname = varname + "[14]/O";
         if(is_filter || type < 0)
             OutTree->Branch(varname.c_str(),det->LEDfailed,leafname.c_str());
-/*
-        varname = typestr + "percent_5_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_5.failed,leafname.c_str());
-
-        varname = typestr + "percent_5";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_5.x,leafname.c_str());
-
-        varname = typestr + "percent_5_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_5.failed,leafname.c_str());
-
-        varname = typestr + "percent_10";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_10.x,leafname.c_str());
-
-        varname = typestr + "percent_10_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_10.failed,leafname.c_str());
-
-        varname = typestr + "percent_15";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_15.x,leafname.c_str());
-
-        varname = typestr + "percent_15_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_15.failed,leafname.c_str());
-
-        varname = typestr + "percent_20";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_20.x,leafname.c_str());
-
-        varname = typestr + "percent_20_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_20.failed,leafname.c_str());
-
-        varname = typestr + "percent_25";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_25.x,leafname.c_str());
-
-        varname = typestr + "percent_25_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_25.failed,leafname.c_str());
-            
-        varname = typestr + "percent_30";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_30.x,leafname.c_str());
-
-        varname = typestr + "percent_30_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_30.failed,leafname.c_str());
-
-        varname = typestr + "percent_35";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_35.x,leafname.c_str());
-
-        varname = typestr + "percent_35_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_35.failed,leafname.c_str());
-            
-        varname = typestr + "percent_40";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_40.x,leafname.c_str());
-
-        varname = typestr + "percent_40_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_percent_40.failed,leafname.c_str());
-
-        varname = typestr + "thrd_30";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_30.x,leafname.c_str());
-
-        varname = typestr + "thrd_30_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_30.failed,leafname.c_str());
-
-        varname = typestr + "thrd_50";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_50.x,leafname.c_str());
-
-        varname = typestr + "thrd_50_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_50.failed,leafname.c_str());
-
-        varname = typestr + "thrd_70";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_70.x,leafname.c_str());
-
-        varname = typestr + "thrd_70_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_70.failed,leafname.c_str());
-
-        varname = typestr + "thrd_90";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_90.x,leafname.c_str());
-
-        varname = typestr + "thrd_90_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_90.failed,leafname.c_str());
-
-        varname = typestr + "thrd_110";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_110.x,leafname.c_str());
-
-        varname = typestr + "thrd_110_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_110.failed,leafname.c_str());
-
-        varname = typestr + "thrd_150";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_150.x,leafname.c_str());
-
-        varname = typestr + "thrd_150_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_150.failed,leafname.c_str());
-
-        varname = typestr + "thrd_200";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_200.x,leafname.c_str());
-
-        varname = typestr + "thrd_200_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_200.failed,leafname.c_str());
-
-        varname = typestr + "thrd_250";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_250.x,leafname.c_str());
-
-        varname = typestr + "thrd_250_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_250.failed,leafname.c_str());
-
-        varname = typestr + "thrd_400";
-        leafname = varname + "/D";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_400.x,leafname.c_str());
-
-        varname = typestr + "thrd_400_failed";
-        leafname = varname + "/O";
-        if(is_filter || type < 0)
-            OutTree->Branch(varname.c_str(),&det->Lead_thrd_400.failed,leafname.c_str());
-
 */
         if(type > 0)
         {
@@ -657,4 +533,6 @@ void TestBeamSetup::init_tree()
         std::cout << typestr << std::endl;
     }
 }
+
+
 
