@@ -44,7 +44,7 @@ void TestBeamSetup::TestBeamAnalysis()
         Detectors.at(i)->FindGlobalMaximum(baseline_region_end, max_region_end); 
         Detectors.at(i)->FindStartPoint(baseline_region_end);
         Detectors.at(i)->FindEndPoint(max_region_end);
-        Detectors.at(i)->FindInvertMaximum(baseline_region_end, Detectors.at(i)->global_maximum.position);
+        Detectors.at(i)->FindInvertMaximum(baseline_region_end, Detectors.at(i)->global_maximum.position+200);
         Detectors.at(i)->FindElectronPeakEndPoint();
         Detectors.at(i)->CalculateCharges();
         Detectors.at(i)->FindNaiveTiming();
