@@ -7,8 +7,11 @@
 class TestBeamSetup : public DetectorSetup
 {
     public:
+        ~TestBeamSetup();
         void TestBeamAnalysis();
-        void SetWaveformToAverage(AverageTool &aver,int theID);
+        void CreateAverageTools();
+        void SetWaveformToAverage();
+        void Finalize_AverageTools(const char* outfile_name);
         void Dump(int id);
         void init(std::vector<int> channel_ids);
         void init_tree();
@@ -17,5 +20,6 @@ class TestBeamSetup : public DetectorSetup
     protected:
         int record_blregion_end[10];
         std::vector<int> Channel_IDs;
+        std::vector<AverageTool*> avers;
 };
 #endif

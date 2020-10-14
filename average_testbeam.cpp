@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
     //3rd input argument is name the output root file will have
     //4th input argument (optional), if it is 1 then dumping will be enabled
 
-    AverageTool aver(16384);
+    //AverageTool aver(4002);
     
     int enable_dumping = 0;
     int file_id = 0;
@@ -41,7 +41,6 @@ int main(int argc, char* argv[])
     //channel_IDs.push_back(1); //<- Channel 1 (MCP)
     //channel_IDs.push_back(2); //<- Channel 2 (MCP)
     //TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]),"Trace");
-    TRC_FileReader myfile(channel_IDs, argv[1], atoi(argv[2]), "--Trace--", file_id);
     TestBeamSetup mysetup;
     //mysetup.CreateMM();
     //mysetup.CreateMCP();
@@ -54,9 +53,14 @@ int main(int argc, char* argv[])
     channel_IDs.push_back(4); //<- Channel 2 (mcp2)
     mysetup.CreateMCP();
     mysetup.CreateMCP();
+    //avers.push_back(new AverageTool());
+    //avers.push_back(new AverageTool());
+    //avers.push_back(new AverageTool());
+    TRC_FileReader myfile(channel_IDs, argv[1], atoi(argv[2]), "--Trace--", file_id);
 
     //mysetup.init(NumberofTracks, OneTrack);
     mysetup.init(channel_IDs);
+    mysetup.CreateAverageTools();
     myfile.SetDetectorSetup(mysetup);
 
     int dumping_id = 0;
@@ -68,9 +72,9 @@ int main(int argc, char* argv[])
 
         i++;
         printf("\rEvent is: %.5d ===============================================",i-1);//magic 
-        mysetup.SetWaveformToAverage(aver,2);
+        mysetup.SetWaveformToAverage();
 
-        aver.StandardAverage();
+        //aver.StandardAverage();
         //mysetup.AverageAnalysis();
         //mysetup.StandardAnalysis();
         
@@ -92,11 +96,12 @@ int main(int argc, char* argv[])
         //mysetup.Fill_Tree();
         //if(i==1) break;
     }
-    bench.Show("full");
-    aver.Finalize();
-    aver.Write(aver_rootfile_name);
-    mysetup.Finalize_Tree(output_rootfile_name);
     
+    mysetup.Finalize_AverageTools(aver_rootfile_name);
+    
+    //mysetup.Finalize_Tree(output_rootfile_name);
+    
+    bench.Show("full");
     std::cout << "done" << std::endl;
 }
 

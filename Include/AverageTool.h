@@ -12,9 +12,9 @@
 class AverageTool
 {
     public:
-        AverageTool(int n);
+        AverageTool();
         ~AverageTool();
-        
+        void initial();
         void SetWaveform(std::vector<double> x, std::vector<double> y, double ref_time, double norm, int baseline_end);
         void SetWaveform(std::vector<double> x, std::vector<double> y, double ref_time, double norm, int baseline_end, double charge_norm);
         void StandardAverage();
@@ -25,9 +25,10 @@ class AverageTool
         void AddNoiseSpectrumToAverage();
         void AddWaveformToAverage();
         void Finalize();
-        void Write(const char* outfile_name);
+        void Write(const char* outfile_name,int id);
 
     private:
+        
         std::vector<double> waveform_y;
         std::vector<double> waveform_x;
 
@@ -58,6 +59,7 @@ class AverageTool
         int N;
         int N2;
         int m;
+        int fpos;
         int number_of_events;
         double Reference_time;
         double Normalization_factor;

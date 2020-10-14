@@ -1,15 +1,15 @@
 #include "AverageTool.h"
 
 
-AverageTool::AverageTool(int n)
+AverageTool::AverageTool()
 {
+    const int n = 1e4;
     number_of_events = 0;
     N = n;
     N2 = n;
     //waveform_y = new double[N];
     //waveform_x = new double[N];
-
-    spectrum_real = new double[N];
+spectrum_real = new double[N];
     spectrum_imag = new double[N];
 
     noise_spectrum_real = new double[N];
@@ -49,6 +49,7 @@ AverageTool::AverageTool(int n)
         average_of_spectrum_of_noise_imag[i] = 0;
         average_of_spectrum_of_noise_power[i] = 0;
     }
+    
 }
 
 AverageTool::~AverageTool()
@@ -81,14 +82,18 @@ AverageTool::~AverageTool()
     delete[] spectrum_of_average_imag;
 }
 
-
+void AverageTool::initial()
+{
+    number_of_events = 0;
+    
+}
 void AverageTool::SetWaveform(std::vector<double> x, std::vector<double> y, double ref_time, double norm, int baseline_end)
 {
     waveform_x = x;
     waveform_y = y;
     m = x.size();
-    for(int i = 0; i < m; ++i)
-        waveform_y[i]*=norm;
+    //for(int i = 0; i < m; ++i)
+    //    waveform_y[i]*=norm;
     //for(int i = 0; i < N; ++i)
     //{
     //    waveform_x[i] = x.at((i+start)%x.size());
@@ -136,15 +141,16 @@ void AverageTool::StandardAverage()
 void AverageTool::GetNoiseSpectrum()
 {
     double temp_noise[N2];
-    for(int i = N2 - 1; i >= 0; i--)
+    for(int i = m - 1; i >= 0; i--)
     {
-        int pos = i - N2 + 1 + baseline_region_end;
-        if( pos < 0 )
-            pos += m;
-        temp_noise[i] = waveform_y.at(pos%m);
+        int pos = i - m + 1 + baseline_region_end;
+        while( pos < 0 )    pos += m;
+        fpos = pos%m; 
+        if(fpos<0||fpos>m) temp_noise[i] = 0;
+        else temp_noise[i] = waveform_y.at(fpos);
     }
     
-    TVirtualFFT *fft_forward = TVirtualFFT::FFT(1, &N2, "R2C M");
+    TVirtualFFT *fft_forward = TVirtualFFT::FFT(1, &m, "R2C M");
     fft_forward->SetPoints(temp_noise);
     fft_forward->Transform();
 
@@ -154,10 +160,13 @@ void AverageTool::GetNoiseSpectrum()
 void AverageTool::GetSpectrum()
 {
     double temp_wave[N];
-    for(int i = 0; i < N; ++i)
-        temp_wave[i]= waveform_y.at((i+baseline_region_end)%m);
+    for(int i = 0; i < m; ++i){
+        fpos = (i+baseline_region_end)%m;
+        if(fpos<0||fpos>m) temp_wave[i] = 0;
+        else temp_wave[i]= waveform_y.at(fpos);
+    }
 
-    TVirtualFFT *fft_forward = TVirtualFFT::FFT(1, &N, "R2C M");
+    TVirtualFFT *fft_forward = TVirtualFFT::FFT(1, &m, "R2C M");
     fft_forward->SetPoints(temp_wave);
     fft_forward->Transform();
 
@@ -167,10 +176,10 @@ void AverageTool::GetSpectrum()
 void AverageTool::GetSpectrumOfAverage()
 {
     double temp_wave[N];
-    for(int i = 0; i < N; ++i)
+    for(int i = 0; i < m; ++i)
         temp_wave[i]= average_of_waveform_y[i%m];
 
-    TVirtualFFT *fft_forward = TVirtualFFT::FFT(1, &N, "R2C M");
+    TVirtualFFT *fft_forward = TVirtualFFT::FFT(1, &m, "R2C M");
     fft_forward->SetPoints(temp_wave);
     fft_forward->Transform();
 
@@ -179,7 +188,7 @@ void AverageTool::GetSpectrumOfAverage()
 
 void AverageTool::AddSpectrumToAverage()
 {
-    for(int i = 0; i < N; ++i)
+    for(int i = 0; i < m; ++i)
     {
         average_of_spectrum_power[i] += spectrum_real[i]*spectrum_real[i] + 
                                        spectrum_imag[i]*spectrum_imag[i] ;
@@ -190,7 +199,7 @@ void AverageTool::AddSpectrumToAverage()
 
 void AverageTool::AddNoiseSpectrumToAverage()
 {
-    for(int i = 0; i < N2; ++i)
+    for(int i = 0; i < m; ++i)
     {
         average_of_spectrum_of_noise_power[i] += noise_spectrum_real[i]*noise_spectrum_real[i] + noise_spectrum_imag[i]*noise_spectrum_imag[i];
         average_of_spectrum_of_noise_real[i] += noise_spectrum_real[i];
@@ -212,33 +221,34 @@ void AverageTool::AddWaveformToAverage()
     //
 
     //careful
-    for(int i = 0; i < N; ++i)
+    for(int i = 0; i < m; ++i)
     {
         int pos = i - Move_pos;
-        if( pos < 0 ) pos += m;
-        average_of_waveform_y[i%N] +=  ( waveform_y.at((pos+1)%m)-waveform_y.at(pos%m) )*x_after_move + waveform_y.at(pos%m);
+        while( pos < 0 ) pos += m;
+        average_of_waveform_y[i%m] +=  ( waveform_y.at((pos+1)%m)-waveform_y.at(pos%m) )*x_after_move + waveform_y.at(pos%m);
     }
 }
 
 void AverageTool::Finalize()
 {
-    for(int i = 0 ; i < N; ++i)
+    std::cout<<"number_of_events="<<number_of_events<<std::endl;
+    for(int i = 0 ; i < m; ++i)
     {
         average_of_spectrum_power[i] /= number_of_events;
         average_of_spectrum_real[i] /= number_of_events;
         average_of_spectrum_imag[i] /= number_of_events;
-        average_of_spectrum_freq[i] = i/(waveform_x[1]-waveform_x[0])/N;
+        average_of_spectrum_freq[i] = i/(waveform_x[1]-waveform_x[0])/m;
         average_of_waveform_y[i] /= number_of_events;
         average_of_waveform_x[i] = (waveform_x[1]-waveform_x[0])*i;
     }
-    for(int i = 0 ; i < N2; ++i)
+    for(int i = 0 ; i < m; ++i)
     {
         average_of_spectrum_of_noise_power[i] /= number_of_events;
         average_of_spectrum_of_noise_real[i] /= number_of_events;
         average_of_spectrum_of_noise_imag[i] /= number_of_events;
         //average_of_spectrum_of_noise_power[i] *= 2.; //Multiply by two to correct for the different
         //average_of_spectrum_of_noise_real[i] *= 2.; // number of points in the transform
-        average_of_spectrum_of_noise_freq[i] = i/(waveform_x[1]-waveform_x[0])/N2;
+        average_of_spectrum_of_noise_freq[i] = i/(waveform_x[1]-waveform_x[0])/m;
     }
     //for(int i = 0 ; i < N; ++i)
     //{
@@ -247,46 +257,51 @@ void AverageTool::Finalize()
     //    average_of_spectrum_of_noise_power[i] = average_of_spectrum_of_noise_real[i]*average_of_spectrum_of_noise_real[i] + average_of_spectrum_of_noise_imag[i]*average_of_spectrum_of_noise_imag[i];
     //}
 
-
-    //renormalize average waveform to unity pulse height
+    /*
+    // **renormalize average waveform to unity pulse height
     double average_of_waveform_height = -10;
-    for(int i = 0; i < N; ++i)
+    for(int i = 0; i < m; ++i)
         if(average_of_waveform_y[i] > average_of_waveform_height)
             average_of_waveform_height = average_of_waveform_y[i];
     double norm_factor = 1./average_of_waveform_height;
-    for(int i = 0; i < N; ++i)
+    for(int i = 0; i < m; ++i)
         average_of_waveform_y[i]*=norm_factor;
     //==================================================
-
+*/
     GetSpectrumOfAverage();
-    for(int i = 0 ; i < N; ++i)
+    for(int i = 0 ; i < m; ++i)
         spectrum_of_average_power[i] = spectrum_of_average_real[i]*spectrum_of_average_real[i]+spectrum_of_average_imag[i]*spectrum_of_average_imag[i];
 }
 
-void AverageTool::Write(const char* outfile_name)
+void AverageTool::Write(const char* outfile_name,int id)
 {
-    TFile *f = new TFile(outfile_name,"recreate");
+    TFile *f = new TFile(outfile_name,"update");
+    char str1[200];
+    sprintf(str1, "CH%daverage_spectrum", id);
     TGraph *gr = new TGraph(N/2, average_of_spectrum_freq, average_of_spectrum_power); 
     gr->SetMarkerStyle(20);
     gr->SetLineColor(kRed);
     gr->SetLineWidth(3);
-    gr->Write("average_spectrum");
+    gr->Write(str1);
 
+    sprintf(str1, "CH%daverage_waveform", id);
     TGraph *gr1 = new TGraph(N, average_of_waveform_x, average_of_waveform_y); 
     gr1->SetMarkerStyle(20);
-    gr1->Write("average_waveform");
+    gr1->Write(str1);
 
+    sprintf(str1, "CH%dspectrum_of_average", id);
     TGraph *gr2 = new TGraph(N/2, average_of_spectrum_freq, spectrum_of_average_power); 
     gr2->SetMarkerStyle(20);
     gr2->SetLineColor(kBlack);
     gr2->SetLineWidth(3);
-    gr2->Write("spectrum_of_average");
+    gr2->Write(str1);
 
+    sprintf(str1, "CH%daverage_spectrum_noise", id);
     TGraph *gr3 = new TGraph(N2/2, average_of_spectrum_of_noise_freq, average_of_spectrum_of_noise_power); 
     gr3->SetMarkerStyle(20);
     gr3->SetLineColor(kBlue);
     gr3->SetLineWidth(3);
-    gr3->Write("average_spectrum_noise");
+    gr3->Write(str1);
 
     f->Close();
     delete gr;
