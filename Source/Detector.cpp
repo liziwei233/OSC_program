@@ -55,14 +55,24 @@ void Detector::SubstractBaseline(int base_region_end)
     if (base_region_start <= 0)
         base_region_start = 1;
     if (base_region_start >= base_region_end)
-        base_region_start = 0;
+        base_region_end = base_region_start+1;
     for (int i = base_region_start; i < base_region_end; ++i)
     {
         double y = waveform_y.at(i);
+        if(abs(y)>1e-15){
+
         baseline_sum += y;
         baseline_square_sum += y * y;
+        }
+        else std::cout<<"waveform_y Error! \t"<<y<<std::endl;
     }
     baseline_level = baseline_sum / (base_region_end - base_region_start);
+    if(abs(baseline_level)>1e-15) ;
+    else{
+
+        std::cout<<"baseline Error! \t"<<baseline_level<<"\t baseline_sum="<<baseline_sum<<"\t base_region_end="<<base_region_end<<"\t base_region_start="<<base_region_start<<std::endl;
+        baseline_level = 0;
+        }
     double baseline_rms_squared = baseline_square_sum / (base_region_end - base_region_start) - baseline_level * baseline_level;
     baseline_rms = baseline_rms_squared > 0 ? TMath::Sqrt(baseline_rms_squared) : 0;
 

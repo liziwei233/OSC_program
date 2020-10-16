@@ -11,7 +11,7 @@
 #include "TestBeamSetup.h"
 #include "TrackInfo.h"
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     //1st input argument is is directory path with TRC files
     //2nd input argument is number of files for each channel in the directory
@@ -19,20 +19,22 @@ int main(int argc, char* argv[])
     //4th input argument (optional), if it is 1 then dumping will be enabled
 
     //AverageTool aver(4002);
-    
+
     int enable_dumping = 0;
     int file_id = 0;
-    if(argc > 4)
+    int dumping_id = 0;
+    if (argc > 4)
     {
-        if(atoi(argv[4]) == 1)
-            enable_dumping = 1;
+        //if(atoi(argv[4]) == 1)
+        enable_dumping = 1;
+        dumping_id = atoi(argv[4]);
     }
 
     TBenchmark bench;
     bench.Start("full");
 
-    const char* aver_rootfile_name = argv[3];
-    const char* output_rootfile_name = "ignore_this.root";
+    const char *aver_rootfile_name = argv[3];
+    const char *output_rootfile_name = "ignore_this.root";
     //TrackInfo Tracker(argv[2]);
 
     //FileReader myfile(argv[1]);
@@ -46,11 +48,14 @@ int main(int argc, char* argv[])
     //mysetup.CreateMCP();
     //mysetup.CreateMCP();
     //mysetup.CreateMM();
+    //mysetup.CreateTR();
     channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
-    mysetup.CreateTR();
-    channel_IDs.push_back(2); //<- Channel 1 (mcp1)
+    channel_IDs.push_back(2); //<- Channel 2 (Picosecond Micromegas)
+    channel_IDs.push_back(3); //<- Channel 1 (mcp1)
     //channel_IDs.push_back(3); //<- Channel 2 (mcp2)
     channel_IDs.push_back(4); //<- Channel 2 (mcp2)
+    mysetup.CreateMCP();
+    mysetup.CreateMCP();
     mysetup.CreateMCP();
     mysetup.CreateMCP();
     //avers.push_back(new AverageTool());
@@ -63,28 +68,25 @@ int main(int argc, char* argv[])
     mysetup.CreateAverageTools();
     myfile.SetDetectorSetup(mysetup);
 
-    int dumping_id = 0;
-
-    std::cout << std::endl;
     int i = 0;
-    while( myfile.GetNextEvent() )
+    while (myfile.GetNextEvent())
     {
+        printf("\rEvent is: %.5d ===============================================", i); //magic
+        //if (i == dumping_id)
+        //{
 
-        i++;
-        printf("\rEvent is: %.5d ===============================================",i-1);//magic 
-        mysetup.SetWaveformToAverage();
+            mysetup.SetWaveformToAverage();
 
-        //aver.StandardAverage();
-        //mysetup.AverageAnalysis();
-        //mysetup.StandardAnalysis();
-        
-        
-        //if(i-1==dumping_id) // Specify Event to be dumped to dumpfile.root (read by executing ` root -l draw_dump.C `)
-        //    mysetup.Dump();
+            //aver.StandardAverage();
+            //mysetup.AverageAnalysis();
+            //mysetup.StandardAnalysis();
 
-        if(i - 1 == dumping_id && enable_dumping) 
+            //if(i-1==dumping_id) // Specify Event to be dumped to dumpfile.root (read by executing ` root -l draw_dump.C `)
+            //    mysetup.Dump();
+
+            if (i == dumping_id && enable_dumping)
                 mysetup.Dump(dumping_id);
-                /*
+            /*
             if(dumping_id<=i-1)
             {
                 printf("\nNext event to dump: (give negative to stop dumping)");
@@ -92,16 +94,17 @@ int main(int argc, char* argv[])
                 if(dumping_id < 0) break;
             }
             */
+        //}
 
         //mysetup.Fill_Tree();
         //if(i==1) break;
+        i++;
     }
-    
+
     mysetup.Finalize_AverageTools(aver_rootfile_name);
-    
+
     //mysetup.Finalize_Tree(output_rootfile_name);
-    
+
     bench.Show("full");
     std::cout << "done" << std::endl;
 }
-

@@ -91,7 +91,16 @@ void AverageTool::SetWaveform(std::vector<double> x, std::vector<double> y, doub
 {
     waveform_x = x;
     waveform_y = y;
-    m = x.size();
+    m = y.size();
+    for(int i = 0; i < m; ++i)
+    {
+        if(abs(y.at(i))>1e-15) waveform_y[i] = y.at(i);
+        else {
+        waveform_y[i] = 0;
+    std::cout<<"Error!! "<<i<<"\t"<<y.at(i)<<"\t"<<waveform_y[i]<<std::endl;
+
+        }
+    }
     //for(int i = 0; i < m; ++i)
     //    waveform_y[i]*=norm;
     //for(int i = 0; i < N; ++i)
@@ -108,10 +117,9 @@ void AverageTool::SetWaveform(std::vector<double> x, std::vector<double> y, doub
 void AverageTool::SetWaveform(std::vector<double> x, std::vector<double> y, double ref_time, double norm, int baseline_end, double charge_norm)
 {
     waveform_x = x;
-    waveform_y = y;
+    //waveform_y = y;
     m = x.size();
-    for(int i = 0; i < m; ++i)
-        waveform_y[i]*=charge_norm;
+    
     //for(int i = 0; i < N; ++i)
     //{
     //    waveform_x[i] = x.at((i+start)%x.size());
@@ -231,7 +239,7 @@ void AverageTool::AddWaveformToAverage()
 
 void AverageTool::Finalize()
 {
-    std::cout<<"number_of_events="<<number_of_events<<std::endl;
+        std::cout<<"number_of_events = "<<number_of_events<<std::endl;
     for(int i = 0 ; i < m; ++i)
     {
         average_of_spectrum_power[i] /= number_of_events;
@@ -278,26 +286,27 @@ void AverageTool::Write(const char* outfile_name,int id)
     TFile *f = new TFile(outfile_name,"update");
     char str1[200];
     sprintf(str1, "CH%daverage_spectrum", id);
-    TGraph *gr = new TGraph(N/2, average_of_spectrum_freq, average_of_spectrum_power); 
+    TGraph *gr = new TGraph(m/2, average_of_spectrum_freq, average_of_spectrum_power); 
     gr->SetMarkerStyle(20);
     gr->SetLineColor(kRed);
     gr->SetLineWidth(3);
     gr->Write(str1);
 
     sprintf(str1, "CH%daverage_waveform", id);
-    TGraph *gr1 = new TGraph(N, average_of_waveform_x, average_of_waveform_y); 
+  
+    TGraph *gr1 = new TGraph(m, average_of_waveform_x, average_of_waveform_y); 
     gr1->SetMarkerStyle(20);
     gr1->Write(str1);
 
     sprintf(str1, "CH%dspectrum_of_average", id);
-    TGraph *gr2 = new TGraph(N/2, average_of_spectrum_freq, spectrum_of_average_power); 
+    TGraph *gr2 = new TGraph(m/2, average_of_spectrum_freq, spectrum_of_average_power); 
     gr2->SetMarkerStyle(20);
     gr2->SetLineColor(kBlack);
     gr2->SetLineWidth(3);
     gr2->Write(str1);
 
     sprintf(str1, "CH%daverage_spectrum_noise", id);
-    TGraph *gr3 = new TGraph(N2/2, average_of_spectrum_of_noise_freq, average_of_spectrum_of_noise_power); 
+    TGraph *gr3 = new TGraph(m/2, average_of_spectrum_of_noise_freq, average_of_spectrum_of_noise_power); 
     gr3->SetMarkerStyle(20);
     gr3->SetLineColor(kBlue);
     gr3->SetLineWidth(3);

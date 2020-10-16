@@ -37,12 +37,14 @@ then
 				echo $pre
 				echo "Nfile =" $((nfile-1))
 				./analyze_testbeam $path/$name $((nfile-1)) $path/$pathname$name.root
+				./average_testbeam $path/$name $((nfile-1)) $path/$pathname${name}average.root
 			else
 				for subname in `ls $path/$name`
 				do
 					nsubfile=$(ls -l $path/$name/$subname | grep "^-" | wc -l)
 					echo "Nfile =" $((nsubfile-1))
-					./analyze_testbeam $path/$name/$subname $((nsubfile-1)) $name_$subname.root
+					./analyze_testbeam $path/$name/$subname $((nsubfile-1)) $name$subname.root
+					./average_testbeam $path/$name/$subname $((nsubfile-1)) $name${subname}average.root
 				done
 			fi
 		fi
@@ -55,5 +57,6 @@ else
 	echo "Nfile =" $((nfile-1))
 	echo $pre
 	./analyze_testbeam $path/ $((nfile-1)) $path/../${pathname}.root
+	./average_testbeam $path/ $((nfile-1)) $path/../${pathname}average.root
 fi
 

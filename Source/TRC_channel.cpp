@@ -1,14 +1,13 @@
 #include "TRC_channel.h"
 
-TRC_channel::TRC_channel(const char* dir, int n, int ch, const char* file_midname, int first_file_counter )
+TRC_channel::TRC_channel(const char *dir, int n, int ch, const char *file_midname, int first_file_counter)
 {
     max_number_of_files = n;
     directory_path = std::string(dir);
     std::string middle_name = std::string(file_midname);
     filename_header = std::string("C") + std::to_string(ch) + middle_name;
-    if( directory_path.back() != '/' )
+    if (directory_path.back() != '/')
         directory_path.push_back('/');
-
 
     //reserve vector sizes to prevent reallocations
     triggerTime.reserve(100);
@@ -24,16 +23,16 @@ TRC_channel::TRC_channel(const char* dir, int n, int ch, const char* file_midnam
     OpenFile(file_counter);
 }
 
-std::vector<double> TRC_channel::GetWaveformX() { return waveform_x; } 
-std::vector<double> TRC_channel::GetWaveformY() { return waveform_y; } 
+std::vector<double> TRC_channel::GetWaveformX() { return waveform_x; }
+std::vector<double> TRC_channel::GetWaveformY() { return waveform_y; }
 
 bool TRC_channel::GetNextEvent()
 {
-    if(event_number >= Number_of_events_in_file) 
+    if (event_number >= Number_of_events_in_file)
     {
         event_number = 0;
         file_counter++;
-        if(file_counter >= max_number_of_files)
+        if (file_counter >= max_number_of_files)
             return 1;
         OpenFile(file_counter);
     }
@@ -41,11 +40,28 @@ bool TRC_channel::GetNextEvent()
     waveform_x.clear();
     waveform_y.clear();
 
-    int waveform_size = desc.wave_array_count/desc.subarray_count;
-    for(int i = 0; i < waveform_size; ++i)
+    int waveform_size = desc.wave_array_count / desc.subarray_count;
+    double x = 0;
+    double y = 0;
+    for (int i = 0; i < waveform_size; ++i)
     {
-        waveform_x.push_back(i*desc.horizontal_interval + triggerOffset.at(event_number));
-        waveform_y.push_back(wave.at(i+event_number*waveform_size)*desc.vertical_gain - desc.vertical_offset);
+        x = i * desc.horizontal_interval + triggerOffset.at(event_number);
+        y = wave.at(i + event_number * waveform_size) * desc.vertical_gain - desc.vertical_offset;
+        if (abs(x) > 1e-20)
+            waveform_x.push_back(x);
+        else
+           {
+               std::cout<<"Error!! read file waveform x="<<x<<std::endl;
+           waveform_x.push_back(-1);
+           } 
+        if (abs(y) > 1e-15)
+            waveform_y.push_back(y);
+        else
+        {
+               std::cout<<"Error!! read file waveform y="<<y<<std::endl;
+
+            waveform_y.push_back(0);
+        }
     }
 
     event_number++;
@@ -62,11 +78,12 @@ int TRC_channel::OpenFile(int i)
     triggerOffset.clear();
     wave.clear();
 
-    FILE* file;
-    file = fopen(full_path.c_str(),"r");
-    if(int tmp = readLeCroyBinary(file, &desc, &triggerTime, &triggerOffset, &wave))
+    FILE *file;
+    file = fopen(full_path.c_str(), "r");
+    if (int tmp = readLeCroyBinary(file, &desc, &triggerTime, &triggerOffset, &wave))
     {
-        std::cerr << "Unknown format: "<< tmp << std::endl << std::endl;
+        std::cerr << "Unknown format: " << tmp << std::endl
+                  << std::endl;
         return 1;
     }
 
@@ -76,91 +93,107 @@ int TRC_channel::OpenFile(int i)
     fclose(file);
     return 0;
 }
- 
-int TRC_channel::readLeCroyBinary(FILE * file, wavedesc * desc, std::vector<double> * triggerTime, std::vector<double> * triggerOffset, std::vector<int> * wave)
+
+int TRC_channel::readLeCroyBinary(FILE *file, wavedesc *desc, std::vector<double> *triggerTime, std::vector<double> *triggerOffset, std::vector<int> *wave)
 {
     wavedesc header;
     uint8_t tmp[9];
-    do{
-        if(fread(tmp, 8, 1, file) != 1) return 1;
+    do
+    {
+        if (fread(tmp, 8, 1, file) != 1)
+            return 1;
         tmp[8] = 0;
         fseek(file, -7, SEEK_CUR);
-    } while(strcmp((char*)tmp, "WAVEDESC") != 0);
+    } while (strcmp((char *)tmp, "WAVEDESC") != 0);
     fseek(file, -1, SEEK_CUR);
-    
+
     //BEGIN OF WAVEDESC BLOCK
-    if(fread(&header, sizeof(wavedesc), 1, file) != 1) return 2;
+    if (fread(&header, sizeof(wavedesc), 1, file) != 1)
+        return 2;
     *desc = (wavedesc)header;
     //END OF WAVEDESC BLOCK
-    
+
     //BEGIN OF USERTEXT BLOCK
     fseek(file, header.user_text, SEEK_CUR);
     //END OF USERTEXT BLOCK
-    
+
     //BEGIN OF TRIGTIME ARRAY BLOCK
-    if( header.subarray_count > 1){
-    for(int ii = 0; ii < header.subarray_count ; ii++){
-        double val0, val1;
-        if(ffread(header.comm_order1, &val0, 8, file) != 1) return 3;
-        if(ffread(header.comm_order1, &val1, 8, file) != 1) return 4;
-        triggerTime -> push_back(val0);
-        triggerOffset -> push_back(val1);
+    if (header.subarray_count > 1)
+    {
+        for (int ii = 0; ii < header.subarray_count; ii++)
+        {
+            double val0, val1;
+            if (ffread(header.comm_order1, &val0, 8, file) != 1)
+                return 3;
+            if (ffread(header.comm_order1, &val1, 8, file) != 1)
+                return 4;
+            triggerTime->push_back(val0);
+            triggerOffset->push_back(val1);
         }
     }
     else
     {
-        triggerTime -> push_back(0);
-        triggerOffset -> push_back(0);
-    } 
+        triggerTime->push_back(0);
+        triggerOffset->push_back(0);
+    }
     //END OF TRIGTIME ARRAY BLOCK
-    
+
     //BEGIN OF RISTIME ARRAY BLOCK
     fseek(file, header.ris_time_array, SEEK_CUR);
     //END OF RISTIME ARRAY BLOCK
-    
+
     //BEGIN OF DATA_ARRAY_1 ARRAY BLOCK
-    for(int ii = 0; ii < header.wave_array_count; ii++){
+    for (int ii = 0; ii < header.wave_array_count; ii++)
+    {
         int comm_type;
         header.comm_order1 == 1 ? comm_type = header.comm_type1 : comm_type = header.comm_type2;
-        switch(comm_type){
-            case 0:
-                int8_t val0;
-                if(ffread(header.comm_order1, &val0, comm_type + 1, file) != 1) return 5;
-                //if(fread(&val0, comm_type + 1, 1, file) != 1) return 1;
-                wave -> push_back((int)val0);
-                break;
-            case 1:
-                int16_t val1;
-                if(ffread(header.comm_order1, &val1, comm_type + 1, file) != 1) return 6;
-                //if(fread(&val1, comm_type + 1, 1, file) != 1) return 1;
-                wave -> push_back((int)val1);
-                break;
+        switch (comm_type)
+        {
+        case 0:
+            int8_t val0;
+            if (ffread(header.comm_order1, &val0, comm_type + 1, file) != 1)
+                return 5;
+            //if(fread(&val0, comm_type + 1, 1, file) != 1) return 1;
+            wave->push_back((int)val0);
+            break;
+        case 1:
+            int16_t val1;
+            if (ffread(header.comm_order1, &val1, comm_type + 1, file) != 1)
+                return 6;
+            //if(fread(&val1, comm_type + 1, 1, file) != 1) return 1;
+            wave->push_back((int)val1);
+            break;
         }
     }
     //END OF DATA_ARRAY_1 ARRAY BLOCK
-    
+
     //BEGIN OF DATA_ARRAY_2 ARRAY BLOCK
     fseek(file, header.wave_array_2, SEEK_CUR);
     //END OF DATA_ARRAY_2 ARRAY BLOCK
-    
+
     return 0;
 }
 
-int TRC_channel::ffread(unsigned short int byteOrder, void * val, unsigned int nByte, FILE * fileIn)
+int TRC_channel::ffread(unsigned short int byteOrder, void *val, unsigned int nByte, FILE *fileIn)
 {
     const uint16_t one = 1;
     uint8_t ii;
-    uint8_t * cc;
-    uint8_t * tmp;
-    if(fread(val, nByte, 1, fileIn) != 1) return -1;
-    if(* ((uint8_t *)(&one)) == byteOrder) return 1;
-    else{
+    uint8_t *cc;
+    uint8_t *tmp;
+    if (fread(val, nByte, 1, fileIn) != 1)
+        return -1;
+    if (*((uint8_t *)(&one)) == byteOrder)
+        return 1;
+    else
+    {
         cc = (uint8_t *)val;
         tmp = (uint8_t *)malloc(nByte);
-        for(ii = 0; ii < nByte; ii++){
+        for (ii = 0; ii < nByte; ii++)
+        {
             tmp[ii] = cc[ii];
         }
-        for(ii = 0; ii < nByte; ii++){
+        for (ii = 0; ii < nByte; ii++)
+        {
             cc[ii] = tmp[nByte - ii - 1];
         }
         free(tmp);
