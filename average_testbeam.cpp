@@ -48,16 +48,15 @@ int main(int argc, char *argv[])
     //mysetup.CreateMCP();
     //mysetup.CreateMCP();
     //mysetup.CreateMM();
-    //mysetup.CreateTR();
     channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
+    mysetup.CreateTR();
     channel_IDs.push_back(2); //<- Channel 2 (Picosecond Micromegas)
-    channel_IDs.push_back(3); //<- Channel 1 (mcp1)
-    //channel_IDs.push_back(3); //<- Channel 2 (mcp2)
-    channel_IDs.push_back(4); //<- Channel 2 (mcp2)
+   // channel_IDs.push_back(3); //<- Channel 1 (mcp1)
+    //channel_IDs.push_back(4); //<- Channel 2 (mcp2)
     mysetup.CreateMCP();
-    mysetup.CreateMCP();
-    mysetup.CreateMCP();
-    mysetup.CreateMCP();
+    //mysetup.CreateMCP();
+   // mysetup.CreateMCP();
+    //mysetup.CreateMCP();
     //avers.push_back(new AverageTool());
     //avers.push_back(new AverageTool());
     //avers.push_back(new AverageTool());

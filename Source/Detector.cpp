@@ -59,7 +59,7 @@ void Detector::SubstractBaseline(int base_region_end)
     for (int i = base_region_start; i < base_region_end; ++i)
     {
         double y = waveform_y.at(i);
-        if(abs(y)>1e-15){
+        if(std::abs(y)>1e-15){
 
         baseline_sum += y;
         baseline_square_sum += y * y;
@@ -67,7 +67,7 @@ void Detector::SubstractBaseline(int base_region_end)
         else std::cout<<"waveform_y Error! \t"<<y<<std::endl;
     }
     baseline_level = baseline_sum / (base_region_end - base_region_start);
-    if(abs(baseline_level)>1e-15) ;
+    if(std::abs(baseline_level)>1e-15) ;
     else{
 
         std::cout<<"baseline Error! \t"<<baseline_level<<"\t baseline_sum="<<baseline_sum<<"\t base_region_end="<<base_region_end<<"\t base_region_start="<<base_region_start<<std::endl;
@@ -133,7 +133,7 @@ void Detector::FindFirstPeak(int start, int end)
                 firstpeak.position = i;
             }
         }
-        if (firstpeak.y > 0.3 * global_maximum.y && abs(firstpeak.position - global_maximum.position) > (rise_time[0] * 2 / ghorizontal_interval))
+        if (firstpeak.y > 0.3 * global_maximum.y && std::abs(firstpeak.position - global_maximum.position) > (rise_time[0] * 2 / ghorizontal_interval))
         {
             end = firstpeak.position;
             firstpeakpos.push_back(firstpeak.position);
@@ -334,7 +334,7 @@ void Detector::FindElectronPeakEndPointSimulation()
             }
 
             double slope = num / den;
-            if (abs(slope) < 0.001)
+            if (std::abs(slope) < 0.001)
             {
                 e_peak_end.position = i;
                 e_peak_end.y = waveform_y.at(i);
@@ -753,7 +753,7 @@ TimingInfo Detector::Time_linear(double fac, int partype, int Npoint)
         Timing.x = (cf - Timing.intersect) / Timing.slope;
     Timing.timing = -Timing.intersect / Timing.slope;
     Timing.r = results.at(2);
-    if (abs(results.at(2)) > 0.5)
+    if (std::abs(results.at(2)) > 0.5)
         Timing.failed = 0;
 
     /* ====================check====================

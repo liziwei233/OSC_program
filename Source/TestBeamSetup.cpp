@@ -48,10 +48,14 @@ void TestBeamSetup::TestBeamAnalysis()
         max_region_end = 2000 + baseline_region_end;
 
         Detectors.at(i)->SubstractBaseline(baseline_region_end);
+        if (Detectors.at(i)->type == 0)
+            Detectors.at(i)->FindGlobalMaximum(baseline_region_end, max_region_end);
+        else
+        {
+            Detectors.at(i)->FindFirstPeak(baseline_region_end, max_region_end);
+            Detectors.at(i)->ConvertFirstPeak2GlobalMaximum();
+        }
 
-        //Detectors.at(i)->FindGlobalMaximum(baseline_region_end, max_region_end);
-        Detectors.at(i)->FindFirstPeak(baseline_region_end, max_region_end);
-        Detectors.at(i)->ConvertFirstPeak2GlobalMaximum();
         Detectors.at(i)->FindStartPoint(baseline_region_end);
         Detectors.at(i)->FindEndPoint(max_region_end);
         Detectors.at(i)->CalculateCharges();
@@ -253,7 +257,8 @@ void TestBeamSetup::SetWaveformToAverage()
     double ref_time = 0;
     double n = 0;
     double normalization = 0;
-    double cut[10] = {9e5, 9e5,9e5,9e5, 1.2e-3};
+    double cut[10] = {9e5, 9e5,20e-3, 9e5, 9e5};
+    double qcut[10] = {-9e5, 0.1, -9e5, -9e5};
     int ntrue = 0;
     for (int i = 0; i < NofDetectors; ++i)
     {
@@ -288,14 +293,18 @@ void TestBeamSetup::SetWaveformToAverage()
         {
 
             Detectors.at(i)->SubstractBaseline(baseline_region_end);
-            Detectors.at(i)->FindFirstPeak(baseline_region_end, max_region_end);
-            Detectors.at(i)->ConvertFirstPeak2GlobalMaximum();
-            //Detectors.at(i)->FindGlobalMaximum(0, Detectors.at(i)->waveform_y.size()-1);
+            if (Detectors.at(i)->type == 0)
+                Detectors.at(i)->FindGlobalMaximum(baseline_region_end, max_region_end);
+            else
+            {
+                Detectors.at(i)->FindFirstPeak(baseline_region_end, max_region_end);
+                Detectors.at(i)->ConvertFirstPeak2GlobalMaximum();
+            }
 
             Detectors.at(i)->FindStartPoint(baseline_region_end);
             Detectors.at(i)->FindEndPoint(max_region_end);
             //Detectors.at(i)->FindElectronPeakEndPoint();
-            //Detectors.at(i)->CalculateCharges();
+            Detectors.at(i)->CalculateCharges();
             //Detectors.at(i)->FindNaiveTiming();
             //Detectors.at(i)->FindRiseTime();
             //Detectors.at(i)->FindFirstPeak();
@@ -304,22 +313,22 @@ void TestBeamSetup::SetWaveformToAverage()
             Detectors.at(i)->TimeTwentyPercent();
             //Detectors.at(i)->TimeInflection();
             //ref_time += Detectors.at(i)->Inflection.timing;
-            if(Detectors.at(i)->type==0) ref_time = Detectors.at(i)->TwentyPercent.x;
-            if (ref_time <=0 || ref_time>4e3)
+            if (Detectors.at(i)->type == 0)
+                ref_time = Detectors.at(i)->TwentyPercent.x;
+            if (ref_time <= 0 || ref_time > 4e3)
                 ref_time = 15.;
-            if (Detectors.at(i)->global_maximum.y < cut[i])
+            if (Detectors.at(i)->global_maximum.y < cut[i] &&Detectors.at(i)->charge_all[0]>qcut[i])
             {
                 ntrue++;
             }
         }
     }
-    if (ntrue > 2)
+    if (ntrue > NofDetectors-1)
     {
         for (int i = 0; i < NofDetectors; ++i)
         {
 
-            
-            if (abs(Detectors.at(i)->global_maximum.y) > 0.5e-3)
+            if (std::abs(Detectors.at(i)->global_maximum.y) > 0.5e-3)
                 normalization = 1. / Detectors.at(i)->global_maximum.y;
             //avers.at(i)->initial();
 

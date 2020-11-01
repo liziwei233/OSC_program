@@ -38,15 +38,15 @@ int main(int argc, char *argv[])
     //Specify the channels written in the files
     std::vector<int> channel_IDs;
     TestBeamSetup mysetup;
-    //mysetup.CreateTR();
     channel_IDs.push_back(1); //<- Channel 2 (Picosecond Micromegas)
+    mysetup.CreateTR();
     channel_IDs.push_back(2); //<- Channel 1 (mcp1)
-    channel_IDs.push_back(3); //<- Channel 2 (mcp2)
-    channel_IDs.push_back(4); //<- Channel 2 (mcp2)
+   // channel_IDs.push_back(3); //<- Channel 2 (mcp2)
+    //channel_IDs.push_back(4); //<- Channel 2 (mcp2)
     mysetup.CreateMCP();
-    mysetup.CreateMCP();
-    mysetup.CreateMCP();
-    mysetup.CreateMCP();
+   // mysetup.CreateMCP();
+   // mysetup.CreateMCP();
+    //mysetup.CreateMCP();
                               //   TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--trace--");
     //TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "--A1A2B1B2--",0);
     //    TRC_FileReader myfile(channel_IDs,argv[1],atoi(argv[2]), "0818test_th30mv",0);

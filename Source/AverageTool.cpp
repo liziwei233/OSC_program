@@ -94,7 +94,7 @@ void AverageTool::SetWaveform(std::vector<double> x, std::vector<double> y, doub
     m = y.size();
     for(int i = 0; i < m; ++i)
     {
-        if(abs(y.at(i))>1e-15) waveform_y[i] = y.at(i);
+        if(std::abs(y.at(i))>1e-15) waveform_y[i] = y.at(i);
         else {
         waveform_y[i] = 0;
     std::cout<<"Error!! "<<i<<"\t"<<y.at(i)<<"\t"<<waveform_y[i]<<std::endl;

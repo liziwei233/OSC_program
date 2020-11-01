@@ -47,18 +47,24 @@ bool TRC_channel::GetNextEvent()
     {
         x = i * desc.horizontal_interval + triggerOffset.at(event_number);
         y = wave.at(i + event_number * waveform_size) * desc.vertical_gain - desc.vertical_offset;
-        if (abs(x) > 1e-20)
+        if (std::abs(x) > 1e-20)
+        {
+
             waveform_x.push_back(x);
-        else
-           {
-               std::cout<<"Error!! read file waveform x="<<x<<std::endl;
-           waveform_x.push_back(-1);
-           } 
-        if (abs(y) > 1e-15)
-            waveform_y.push_back(y);
+        }
         else
         {
-               std::cout<<"Error!! read file waveform y="<<y<<std::endl;
+            std::cout << "Error!! read file waveform x=" <<std::abs(x)<<std::endl;
+            waveform_x.push_back(-1);
+        }
+        if (std::abs(y) > 1e-15)
+        {
+
+            waveform_y.push_back(y);
+        }
+        else
+        {
+            std::cout << "Error!! read file waveform y=" << std::abs(y) << std::endl;
 
             waveform_y.push_back(0);
         }
